@@ -829,7 +829,7 @@ void main(int argc, char** argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(0, 0);
     glutInitWindowSize(WINDOWX, WINDOWY);
-    glutCreateWindow("참깨빵 위에 게살패티");
+    glutCreateWindow("종만이와 밍디");
     glewExperimental = GL_TRUE;
     glewInit();
 
