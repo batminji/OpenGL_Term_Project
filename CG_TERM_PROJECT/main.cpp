@@ -232,8 +232,8 @@ public:
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
-Plane Bread;
-
+Plane bread[2];
+Plane fryfan;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -379,13 +379,17 @@ GLvoid drawScene() {
         LoadMTL("Mr Krabs", "Mr Krabs/mrkrabs.mtl", Krabs.mesh, Krabs.texture_cnt);
         LoadOBJ("BikiniMap/map.obj", BikiniMap.mesh);
         LoadMTL("BikiniMap", "BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
-        printf("ªßΩ√¿€~\n");
         LoadOBJ_single("food/MUFF_T_CR.obj", bread[0].mesh);
         bread[0].mesh[0].textureFile = "food/MUFF_T_CR_01.png";
         bread[0].size = 0.5; bread[1].size = 0.5;
-        bread[0].move += glm::vec3(0.2,+0.5,0); bread[1].move+= glm::vec3(-0.2, +0.5, 0);
+        bread[0].move += glm::vec3(0.0,+1.0,0); 
+        bread[1].move+= glm::vec3(0.0, +1.0, 0);
         LoadOBJ_single("food/MUFF_T_HE.obj", bread[1].mesh);
         bread[1].mesh[0].textureFile = "food/MUFF_T_HE_01.png";
+        fryfan.size = 0.1f; 
+        LoadOBJ("tool/frying_pan.obj",fryfan.mesh);
+        LoadMTL("tool", "tool/frying_pan.mtl",fryfan.mesh, fryfan.texture_cnt);
+       
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -503,13 +507,24 @@ GLvoid drawScene() {
     }
     break;
     case 3:
-    {   for (int i = 0; i < 2; i++) {
+
+    {  
+     
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(3.6, 6.59, 3.7),glm::vec3(-2.47, -1.28, -2.0), cameraUp)));
+
+        for (int i = 0; i < 2; i++) {
         for (Mesh m : bread[i].mesh) {
             bread[i].mesh[0].Texturing();
             m.Bind();
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
             m.Draw();
-        }*/
+        }
+        for (int j = 0; j <fryfan.mesh.size();j++) {
+            fryfan.mesh[0].Texturing();
+            fryfan.mesh[j].Bind();
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(fryfan.my_TR()));
+            fryfan.mesh[j].Draw();
+        }
     }
     }
     break;
@@ -583,6 +598,18 @@ GLvoid drawScene() {
         speech_bubble.Draw();
     }
     break;
+    case 3:
+    {
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+        TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+        story_background.textureFile = "resource/story_bg_0.png";
+        story_background.Texturing();
+        story_background.Bind();
+        story_background.Draw();
+    }
+    break;
     }
 
     glutSwapBuffers();
@@ -613,6 +640,20 @@ void keyboard(unsigned char key, int x, int y) {
                 Text_cnt++;
             }
             break;
+        }
+        break;
+    case 3:
+        switch (key) {
+        case 'z':
+            CameraPos.z -= 0.1f;
+            break;
+        case 'Z':
+            CameraPos.z += 0.1f;
+            break;
+        case 'x': CameraPos.x -= 0.1; break;
+        case 'X': CameraPos.x += 0.1; break;
+        case 'y': CameraPos.y -= 0.1; break;
+        case 'Y': CameraPos.y += 0.1; break;
         }
         break;
     }
@@ -687,11 +728,23 @@ void TimerFunction(int value)
 }
 
 double mx, my;
+double sx, sy;
+double ex, ey;
+bool left_down = 0;
 void Mouse(int button, int state, int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
     my = -(((double)y - WINDOWY / 2.0) / (WINDOWY / 2.0));
-
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        printf("POS : (%f, %f, %f )\n", CameraPos.x, CameraPos.y, CameraPos.z);
+        left_down = 1;
+        sx = mx;
+        sy = my;
+    }
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+        printf("AT : (%f, %f, %f )\n", CameraAt.x, CameraAt.y, CameraAt.z);
+        left_down = 0;
+    }
 
 }
 
@@ -699,6 +752,12 @@ void Motion(int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
     my = -(((double)y - WINDOWY / 2.0) / (WINDOWY / 2.0));
+    if (left_down) {
+        ex = mx;
+        ey = my;
+        CameraAt.x += (ex - sx);
+        CameraAt.y += (ey - sy);
+    }
 
 }
 
