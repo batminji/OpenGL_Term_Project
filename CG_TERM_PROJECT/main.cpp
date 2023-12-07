@@ -47,7 +47,6 @@ GLuint VAO, VBO[3];
 ////////////////////////사운드
 System* ssystem;
 Sound* bgm;
-Sound* click_sound;
 Channel* channel = 0;
 FMOD_RESULT result;
 void* extradriverdata = 0;
@@ -216,8 +215,8 @@ public:
     vector<Mesh>mesh;
     int texture_cnt;
 
-    float rotate =0.0f;
-    float size =1.0f;
+    float rotate = 0.0f;
+    float size = 1.0f;
     glm::vec3 move = glm::vec3(0.0f);
 
     glm::mat4 my_TR() {
@@ -232,7 +231,7 @@ public:
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
-Plane Bread;
+Plane bread[2];
 
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
@@ -378,13 +377,14 @@ GLvoid drawScene() {
         LoadOBJ("Mr Krabs/mrkrabs.obj", Krabs.mesh);
         LoadMTL("Mr Krabs", "Mr Krabs/mrkrabs.mtl", Krabs.mesh, Krabs.texture_cnt);
         LoadOBJ("BikiniMap/map.obj", BikiniMap.mesh);
-        LoadMTL("BikiniMap","BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
         LoadMTL("BikiniMap", "BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
-        LoadOBJ("food/MUFF_T_CR.obj", bread[0].mesh);
-        LoadMTL("food", "food/MUFF_T_CR.mtl", bread[0].mesh, bread[0].texture_cnt);
-        bread[0].move.x += 0.2; bread[1].move.x -= 0.2;
-        LoadOBJ("food/MUFF_T_HE.obj", bread[1].mesh);
-        LoadMTL("food", "food/MUFF_T_HE.mtl", bread[1].mesh, bread[1].texture_cnt);
+        printf("빵시작~\n");
+        LoadOBJ_single("food/MUFF_T_CR.obj", bread[0].mesh);
+        bread[0].mesh[0].textureFile = "food/MUFF_T_CR_01.png";
+        bread[0].size = 0.5; bread[1].size = 0.5;
+        bread[0].move += glm::vec3(0.2,+0.5,0); bread[1].move+= glm::vec3(-0.2, +0.5, 0);
+        LoadOBJ_single("food/MUFF_T_HE.obj", bread[1].mesh);
+        bread[1].mesh[0].textureFile = "food/MUFF_T_HE_01.png";
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -396,7 +396,6 @@ GLvoid drawScene() {
             exit(0);
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
-        ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
         ssystem->playSound(bgm, 0, false, &channel);
     }
     stbi_set_flip_vertically_on_load(true);
@@ -504,11 +503,11 @@ GLvoid drawScene() {
     case 3:
     {   for (int i = 0; i < 2; i++) {
         for (Mesh m : bread[i].mesh) {
-            m.Texturing();
+            bread[i].mesh[0].Texturing();
             m.Bind();
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
             m.Draw();
-        }*/
+        }
     }
     }
     break;
@@ -607,10 +606,7 @@ void keyboard(unsigned char key, int x, int y) {
         switch (key) {
         case GLUT_KEY_SPACE:
             Story_Show = !Story_Show;
-            if (Text_cnt < 7) {
-                ssystem->playSound(click_sound, 0, false, &channel);
-                Text_cnt++;
-            }
+            if (Text_cnt < 7)Text_cnt++;
             break;
         }
         break;
