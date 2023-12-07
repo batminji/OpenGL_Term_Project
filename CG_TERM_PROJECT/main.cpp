@@ -1,6 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "fmod.hpp"
+#include "fmod_errors.h"
 #include <iostream>
 #include <gl/glew.h>
 #include <gl/freeglut.h>
@@ -22,6 +24,7 @@
 
 
 using namespace std;
+using namespace FMOD;
 
 random_device rd;
 default_random_engine dre(rd());
@@ -40,6 +43,14 @@ GLuint vertexShader;
 GLuint fragmentShader;
 
 GLuint VAO, VBO[3];
+
+////////////////////////사운드
+System* ssystem;
+Sound* bgm;
+Channel* channel = 0;
+FMOD_RESULT result;
+void* extradriverdata = 0;
+
 
 glm::vec3 rect_vertex[] = {
     {0.5, 0.5, 0.0},
@@ -381,6 +392,13 @@ GLvoid drawScene() {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
         }
+
+        // 사운드
+        result = System_Create(&ssystem);
+        if (result != FMOD_OK)
+            exit(0);
+        ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
+        // ssystem->createSound("sound/title_bgm.OGG", FMOD_LOOP_NORMAL, 0, &bgm);
     }
     stbi_set_flip_vertically_on_load(true);
     glViewport(0, 0, WINDOWX, WINDOWY);
