@@ -370,7 +370,8 @@ GLvoid drawScene() {
         if (result != FMOD_OK)
             exit(0);
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
-        // ssystem->createSound("sound/title_bgm.OGG", FMOD_LOOP_NORMAL, 0, &bgm);
+        ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
+        ssystem->playSound(bgm, 0, false, &channel);
     }
     stbi_set_flip_vertically_on_load(true);
     glViewport(0, 0, WINDOWX, WINDOWY);
@@ -601,7 +602,13 @@ void TimerFunction(int value)
             }
             else if (line_t >= 1.0f && start_index == 2) {
                 line_t += 0.1f;
-                if (line_t >= 2.0f)SCENE = 1;
+                if (line_t >= 2.0f) {
+                    SCENE = 1;
+                    channel->stop();
+                    bgm->release();
+                    ssystem->createSound("sound/story_bgm.mp3", 0, 0, &bgm);
+                    ssystem->playSound(bgm, 0, false, &channel);
+                }
             }
             else {
                 CameraPos = (float)(1.0 - line_t) * START_CameraPos[start_index] + (float)(line_t)*START_CameraPos[end_index];
