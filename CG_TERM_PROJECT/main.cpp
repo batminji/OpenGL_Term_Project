@@ -47,6 +47,7 @@ GLuint VAO, VBO[3];
 ////////////////////////»ç¿îµå
 System* ssystem;
 Sound* bgm;
+Sound* click_sound;
 Channel* channel = 0;
 FMOD_RESULT result;
 void* extradriverdata = 0;
@@ -231,7 +232,7 @@ public:
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
-Plane bread[2];
+Plane Bread;
 
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
@@ -246,6 +247,7 @@ void TimerFunction(int value);
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 void LoadOBJ(const char* filename, vector<Mesh>& out_mesh);
+void LoadOBJ_single(const char* filename, vector<Mesh>& out_mesh);
 void LoadMTL(const char* FileName, const char* mtlFileName, vector<Mesh>& out_mesh, int& tex_cnt);
 
 void make_vertexShaders()
@@ -394,6 +396,7 @@ GLvoid drawScene() {
             exit(0);
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
+        ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
         ssystem->playSound(bgm, 0, false, &channel);
     }
     stbi_set_flip_vertically_on_load(true);
@@ -505,7 +508,7 @@ GLvoid drawScene() {
             m.Bind();
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
             m.Draw();
-        }
+        }*/
     }
     }
     break;
@@ -604,7 +607,10 @@ void keyboard(unsigned char key, int x, int y) {
         switch (key) {
         case GLUT_KEY_SPACE:
             Story_Show = !Story_Show;
-            if (Text_cnt < 7)Text_cnt++;
+            if (Text_cnt < 7) {
+                ssystem->playSound(click_sound, 0, false, &channel);
+                Text_cnt++;
+            }
             break;
         }
         break;
@@ -711,7 +717,95 @@ GLchar* filetobuf(const char* file) {
     buf[length] = 0;
     return buf;
 }
-
+void LoadOBJ_single(const char* filename, vector <Mesh>& out_mesh) {
+    out_mesh.push_back({});
+    vector<int> vertexindices, uvindices, normalindices;
+    vector<GLfloat> temp_vertex;
+    vector<GLfloat> temp_uvs;
+    vector<GLfloat> temp_normals;
+    ifstream in(filename, ios::in);
+    if (in.fail()) {
+        cout << "Impossible to open file" << endl;
+        return;
+    }
+    while (!in.eof()) {
+        string lineHeader;
+        in >> lineHeader;
+        if (lineHeader == "v") {
+            glm::vec3 vertex;
+            in >> vertex.x >> vertex.y >> vertex.z;
+            temp_vertex.push_back(vertex.x);
+            temp_vertex.push_back(vertex.y);
+            temp_vertex.push_back(vertex.z);
+        }
+        else if (lineHeader == "vt") {
+            glm::vec2 uv;
+            in >> uv.x >> uv.y;
+            temp_uvs.push_back(uv.x);
+            temp_uvs.push_back(uv.y);
+        }
+        else if (lineHeader == "vn") {
+            glm::vec3 normal;
+            in >> normal.x >> normal.y >> normal.z;
+            temp_normals.push_back(normal.x);
+            temp_normals.push_back(normal.y);
+            temp_normals.push_back(normal.z);
+        }
+        else if (lineHeader == "f") {
+            string vertex1, vertex2, vertex3;
+            unsigned int vertexindex[3], uvindex[3], normalindex[3];
+            for (int k = 0; k < 3; ++k) {
+                string temp, temp2;
+                int cnt{ 0 }, cnt2{ 0 };
+                in >> temp;
+                while (1) {
+                    while ((int)temp[cnt] != 47 && cnt < temp.size()) {
+                        temp2 += (int)temp[cnt];
+                        cnt++;
+                    }
+                    if ((int)temp[cnt] == 47 && cnt2 == 0) {
+                        vertexindex[k] = atoi(temp2.c_str());
+                        vertexindices.push_back(vertexindex[k]);
+                        cnt++; cnt2++;
+                        temp2.clear();
+                    }
+                    else if ((int)temp[cnt] == 47 && cnt2 == 1) {
+                        uvindex[k] = atoi(temp2.c_str());
+                        uvindices.push_back(uvindex[k]);
+                        cnt++; cnt2++;
+                        temp2.clear();
+                    }
+                    else if (temp[cnt] = '\n' && cnt2 == 2) {
+                        normalindex[k] = atoi(temp2.c_str());
+                        normalindices.push_back(normalindex[k]);
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            continue;
+        }
+    }
+    for (int i = 0; i < vertexindices.size(); ++i) {
+        unsigned int vertexIndex = vertexindices[i];
+        vertexIndex = (vertexIndex - 1) * 3;
+        glm::vec3 vertex = { temp_vertex[vertexIndex], temp_vertex[vertexIndex + 1], temp_vertex[vertexIndex + 2] };
+        out_mesh.back().vertex.push_back(vertex);
+    }
+    for (unsigned int i = 0; i < uvindices.size(); ++i) {
+        unsigned int uvIndex = uvindices[i];
+        uvIndex = (uvIndex - 1) * 2;
+        glm::vec2 uv = { temp_uvs[uvIndex], temp_uvs[uvIndex + 1] };
+        out_mesh.back().uvs.push_back(uv);
+    }
+    for (unsigned int i = 0; i < normalindices.size(); ++i) {
+        unsigned int normalIndex = normalindices[i];
+        normalIndex = (normalIndex - 1) * 3;
+        glm::vec3 normal = { temp_normals[normalIndex], temp_normals[normalIndex + 1], temp_normals[normalIndex + 2] };
+        out_mesh.back().normals.push_back(normal);
+    }
+}
 void LoadOBJ(const char* filename, vector<Mesh>& out_mesh) {
     vector<int> vertexindices, uvindices, normalindices;
     vector<GLfloat> temp_vertex;
