@@ -15,8 +15,8 @@
 #include <fstream>
 #include <sstream>
 
-#define WINDOWX 1000
-#define WINDOWY 1000
+#define WINDOWX 800
+#define WINDOWY 800
 
 #define GLUT_KEY_SPACE 0x20
 
@@ -208,7 +208,6 @@ public:
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
-Plane Shop;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -301,8 +300,8 @@ GLvoid InitBuffer() {
 bool start = true;
 int SCENE = 0;
 
-glm::vec3 CameraPos = {5.0f, 5.0f, 5.0f};
-glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f};
+glm::vec3 CameraPos = { 5.0f, 5.0f, 5.0f };
+glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f };
 float rotate_y = 0.0f;
 
 float light_x = 0.0f, light_z = 5.0f;
@@ -348,8 +347,8 @@ GLvoid drawScene() {
         LoadMTL("Mr Krabs", "Mr Krabs/mrkrabs.mtl", Krabs.mesh, Krabs.texture_cnt);
         LoadOBJ("BikiniMap/map.obj", BikiniMap.mesh);
         LoadMTL("BikiniMap","BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
-      //  LoadOBJ("Order Up/order_up.obj", Shop.mesh);
-      //  LoadMTL("Order Up", "Order Up/order_up.mtl", Shop.mesh, Shop.texture_cnt);
+        LoadMTL("BikiniMap", "BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
+
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -413,7 +412,7 @@ GLvoid drawScene() {
             BikiniMap.mesh[i].Draw();
         }
     }
-        break;
+    break;
     case 1:
     {
         if (Story_Show) {
@@ -424,7 +423,7 @@ GLvoid drawScene() {
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
             for (int i = 0; i < SpongeBob.mesh.size(); ++i) {
-                if(spongebob_talk) SpongeBob.mesh[0].Texturing();
+                if (spongebob_talk) SpongeBob.mesh[0].Texturing();
                 else SpongeBob.mesh[1].Texturing();
                 SpongeBob.mesh[i].Bind();
                 SpongeBob.mesh[i].Draw();
@@ -438,9 +437,9 @@ GLvoid drawScene() {
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
             for (int i = 0; i < Krabs.mesh.size(); ++i) {
-                if(krabs_talk == 0)Krabs.mesh[0].textureFile = "Mr Krabs/mrkrab2.png";
+                if (krabs_talk == 0)Krabs.mesh[0].textureFile = "Mr Krabs/mrkrab2.png";
                 else if (krabs_talk == 8)Krabs.mesh[0].textureFile = "Mr Krabs/mrkrab2.png";
-                else if (krabs_talk == 9)Krabs.mesh[0].textureFile = "Mr Krabs/mrkrab3.png"; 
+                else if (krabs_talk == 9)Krabs.mesh[0].textureFile = "Mr Krabs/mrkrab3.png";
                 else {
                     if (krabs_talk % 2 == 0)Krabs.mesh[0].textureFile = "Mr Krabs/mrkrab1.png";
                     else Krabs.mesh[0].textureFile = "Mr Krabs/mrkrab4.png";
@@ -451,12 +450,12 @@ GLvoid drawScene() {
             }
         }
     }
-        break;
+    break;
     case 2:
     {
-        
+
     }
-        break;
+    break;
     }
 
     // UI
@@ -562,7 +561,7 @@ void keyboard(unsigned char key, int x, int y) {
 void SpecialKeyboard(int key, int x, int y)
 {
     switch (key) {
-        
+
     }
 }
 
@@ -588,7 +587,7 @@ void TimerFunction(int value)
             }
         }
     }
-        break;
+    break;
     case 1:
     {
         CameraPos = { 0.0f, 2.0f, 3.0f };
@@ -608,12 +607,12 @@ void TimerFunction(int value)
             if (timer_cnt == 60)SCENE = 2;
         }
     }
-        break;
+    break;
     case 2:
     {
-        
+
     }
-        break;
+    break;
     }
 
     glutPostRedisplay();
