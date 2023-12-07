@@ -215,19 +215,10 @@ public:
     vector<Mesh>mesh;
     int texture_cnt;
 
-    float rotate;
-    float size;
-    glm::vec3 move;
-    Plane() {
-        size = 1.0f;
-        move = glm::vec3(0.0f);
-        rotate = 0.0f;
-    }
-    Plane(float s) {
-        size = s;
-        move = glm::vec3(0.0f);
-        rotate = 0.0f;
-    }
+    float rotate =0.0f;
+    float size =1.0f;
+    glm::vec3 move = glm::vec3(0.0f);
+
     glm::mat4 my_TR() {
         glm::mat4 TR = glm::mat4(1.0f);
         TR = glm::translate(TR, move);
@@ -240,7 +231,7 @@ public:
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
-Plane bread(1.0f);
+Plane bread[2];
 
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
@@ -387,7 +378,11 @@ GLvoid drawScene() {
         LoadOBJ("BikiniMap/map.obj", BikiniMap.mesh);
         LoadMTL("BikiniMap","BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
         LoadMTL("BikiniMap", "BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
-        
+        LoadOBJ("food/MUFF_T_CR.obj", bread[0].mesh);
+        LoadMTL("food", "food/MUFF_T_CR.mtl", bread[0].mesh, bread[0].texture_cnt);
+        bread[0].move.x += 0.2; bread[1].move.x -= 0.2;
+        LoadOBJ("food/MUFF_T_HE.obj", bread[1].mesh);
+        LoadMTL("food", "food/MUFF_T_HE.mtl", bread[1].mesh, bread[1].texture_cnt);
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -504,8 +499,14 @@ GLvoid drawScene() {
     }
     break;
     case 3:
-    {
-
+    {   for (int i = 0; i < 2; i++) {
+        for (Mesh m : bread[i].mesh) {
+            m.Texturing();
+            m.Bind();
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
+            m.Draw();
+        }
+    }
     }
     break;
     }
@@ -590,6 +591,7 @@ GLvoid Reshape(int w, int h) //--- 콜백 함수: 다시 그리기 콜백 함수
 }
 
 void keyboard(unsigned char key, int x, int y) {
+    if (key >= '0' && key <= '9')SCENE = (int)key - 48;
     switch (SCENE) {
     case 0: // 타이틀 화면
         switch (key) {
