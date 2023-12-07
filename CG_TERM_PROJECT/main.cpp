@@ -47,6 +47,7 @@ GLuint VAO, VBO[3];
 ////////////////////////»ç¿îµå
 System* ssystem;
 Sound* bgm;
+Sound* click_sound;
 Channel* channel = 0;
 FMOD_RESULT result;
 void* extradriverdata = 0;
@@ -399,6 +400,7 @@ GLvoid drawScene() {
             exit(0);
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
+        ssystem->createSound("sound/button_click_sound.mp3", FMOD_DEFAULT, 0, &click_sound);
         ssystem->playSound(bgm, 0, false, &channel);
     }
     stbi_set_flip_vertically_on_load(true);
@@ -602,7 +604,10 @@ void keyboard(unsigned char key, int x, int y) {
         switch (key) {
         case GLUT_KEY_SPACE:
             Story_Show = !Story_Show;
-            if (Text_cnt < 7)Text_cnt++;
+            if (Text_cnt < 7) {
+                // ssystem->playSound(click_sound, 0, false, &channel);
+                Text_cnt++;
+            }
             break;
         }
         break;
