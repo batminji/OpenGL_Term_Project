@@ -47,6 +47,7 @@ GLuint VAO, VBO[3];
 ////////////////////////»ç¿îµå
 System* ssystem;
 Sound* bgm;
+Sound* click_sound;
 Channel* channel = 0;
 FMOD_RESULT result;
 void* extradriverdata = 0;
@@ -231,7 +232,7 @@ public:
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
-Plane bread[2];
+Plane Bread;
 
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
@@ -396,6 +397,7 @@ GLvoid drawScene() {
             exit(0);
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
+        ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
         ssystem->playSound(bgm, 0, false, &channel);
     }
     stbi_set_flip_vertically_on_load(true);
@@ -507,7 +509,7 @@ GLvoid drawScene() {
             m.Bind();
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
             m.Draw();
-        }
+        }*/
     }
     }
     break;
@@ -606,7 +608,10 @@ void keyboard(unsigned char key, int x, int y) {
         switch (key) {
         case GLUT_KEY_SPACE:
             Story_Show = !Story_Show;
-            if (Text_cnt < 7)Text_cnt++;
+            if (Text_cnt < 7) {
+                ssystem->playSound(click_sound, 0, false, &channel);
+                Text_cnt++;
+            }
             break;
         }
         break;
