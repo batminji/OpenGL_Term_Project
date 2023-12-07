@@ -299,7 +299,7 @@ GLvoid InitBuffer() {
 }
 
 bool start = true;
-int SCENE = 2;
+int SCENE = 0;
 
 glm::vec3 CameraPos = {5.0f, 5.0f, 5.0f};
 glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f};
@@ -348,8 +348,8 @@ GLvoid drawScene() {
         LoadMTL("Mr Krabs", "Mr Krabs/mrkrabs.mtl", Krabs.mesh, Krabs.texture_cnt);
         LoadOBJ("BikiniMap/map.obj", BikiniMap.mesh);
         LoadMTL("BikiniMap","BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
-        LoadOBJ("Order Up/order_up.obj", Shop.mesh);
-        LoadMTL("Order Up", "Order Up/order_up.mtl", Shop.mesh, Shop.texture_cnt);
+      //  LoadOBJ("Order Up/order_up.obj", Shop.mesh);
+      //  LoadMTL("Order Up", "Order Up/order_up.mtl", Shop.mesh, Shop.texture_cnt);
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
