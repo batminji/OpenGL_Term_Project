@@ -456,6 +456,11 @@ GLvoid drawScene() {
 
     }
     break;
+    case 3:
+    {
+
+    }
+    break;
     }
 
     // UI
@@ -534,7 +539,7 @@ GLvoid drawScene() {
 
 GLvoid Reshape(int w, int h) //--- 콜백 함수: 다시 그리기 콜백 함수
 {
-
+    glViewport(0, 0, h, h);
 }
 
 void keyboard(unsigned char key, int x, int y) {
