@@ -203,11 +203,34 @@ class Plane {
 public:
     vector<Mesh>mesh;
     int texture_cnt;
+
+    float rotate;
+    float size;
+    glm::vec3 move;
+    Plane() {
+        size = 1.0f;
+        move = glm::vec3(0.0f);
+        rotate = 0.0f;
+    }
+    Plane(float s) {
+        size = s;
+        move = glm::vec3(0.0f);
+        rotate = 0.0f;
+    }
+    glm::mat4 my_TR() {
+        glm::mat4 TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, move);
+        TR = glm::rotate(TR, (float)glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f));
+        TR = glm::scale(TR, glm::vec3(size));
+        return TR;
+    }
 };
 
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
+Plane bread(1.0f);
+
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -337,6 +360,11 @@ int timer_cnt = 0;
 int krabs_talk = 0;
 float breath_ty = 0.5f;
 
+
+
+
+
+
 GLvoid drawScene() {
     if (start) {
         start = false;
@@ -348,7 +376,7 @@ GLvoid drawScene() {
         LoadOBJ("BikiniMap/map.obj", BikiniMap.mesh);
         LoadMTL("BikiniMap","BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
         LoadMTL("BikiniMap", "BikiniMap/map.mtl", BikiniMap.mesh, BikiniMap.texture_cnt);
-
+        
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
