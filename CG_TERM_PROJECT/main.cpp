@@ -386,6 +386,7 @@ bool oil_timer = false;
 bool potato_fry_timer = false;
 float score[4][2] = { 0 };
 float bar_move = 0.0f;
+float time_angle = 0.0f;
 int bar_dir = 1;
 int jcnt = 0;
 bool flip_bar_dir = true;
@@ -714,7 +715,13 @@ GLvoid drawScene() {
             story_background.Bind();
             story_background.Draw();
         }
-
+        { //시계
+            game_ui.textureFile = "resource/clock.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
         { //기본 바 
             game_ui.textureFile = "resource/fry_ui.png";
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
@@ -751,6 +758,7 @@ GLvoid drawScene() {
             game_ui.Bind();
             game_ui.Draw();
         }
+        
     }
     break;
     case 6:
