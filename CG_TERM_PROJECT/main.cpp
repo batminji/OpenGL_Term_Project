@@ -1382,6 +1382,7 @@ void keyboard(unsigned char key, int x, int y) {
                 ssystem->playSound(click_sound, 0, false, &channel);
                 Text_cnt++;
             }
+            else SCENE = 2;
             break;
         }
         break;
@@ -1393,6 +1394,7 @@ void keyboard(unsigned char key, int x, int y) {
                 ssystem->playSound(click_sound, 0, false, &channel);
                 Guest_Text_cnt++;
             }
+            else SCENE = 3;
             break;
         }
     }
@@ -1626,6 +1628,7 @@ void TimerFunction(int value)
           break;
     case 6:{
         time_angle += 1.5f;
+        if (jcnt > 0) tomato.move += glm::vec3(0.3, 0.1, 0.3), cabbage.move -= glm::vec3(0.3, -0.1, 0.3);
         if (time_angle < 360.0f) {
             if ((int)score[6][0] / 10.0 >= 20) game_result[6] = 1, time_angle = 360.0f;
         }
@@ -1783,8 +1786,9 @@ void Motion(int x, int y)
         if (time_angle < 360.0f) {
             bowl.rotate_x =  fabs(atan2(mx, my));
             bowl.rotate_z = fabs(atan2(mx, my));
-            if (fabs(bread_angle - atan2(mx, my)>1.4))game_result[6] =2, time_angle =360.0f;
+            if (fabs(bread_angle - atan2(mx, my)>1.4))game_result[6] =2, time_angle =360.0f ,jcnt =1;
             score[6][0] += 2*fabs(bread_angle - atan2(mx, my));
+
             bread_angle = atan2(mx, my);
            cabbage.move = glm::vec3(1.0 * cos(bread_angle), 0, 1.0 * sin(bread_angle)+ 0.5);
            tomato.move = glm::vec3(1.0 * cos(bread_angle + glm::radians(90.0f)),3.0, 1.0 * sin(bread_angle + glm::radians(90.0f)) + 0.5);
