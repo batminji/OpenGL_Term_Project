@@ -214,7 +214,7 @@ public:
         glDrawArrays(GL_TRIANGLE_FAN, 0, vertex.size());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-
+    
 };
 
 class Plane {
@@ -576,6 +576,7 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].Draw();
 
 
+
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, 0.2f, 0.0f));
         TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -753,7 +754,7 @@ GLvoid drawScene() {
     }
     break;
     case 6:
-    {
+    { 
         { // 움직이는 바
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
@@ -774,9 +775,9 @@ GLvoid drawScene() {
             game_ui.Draw();
         }
     }
-    break;
+        break;
     case 7:
-    {
+    {        
         { // 움직이는 바
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
