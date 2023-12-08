@@ -1048,6 +1048,35 @@ GLvoid drawScene() {
             story_background.Bind();
             story_background.Draw();
         }
+        if (pour_done) {
+            TR = glm::mat4(1.0f);
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            if (flip_bar_tx >= 0.5f && flip_bar_tx <= 0.7f)game_ui.textureFile = "resource/good.png";
+            else game_ui.textureFile = "resource/fail.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { // 움직이는 바
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            flip_bar.Texturing();
+            flip_bar.Bind();
+            flip_bar.Draw();
+        }
+        { //기본 바 
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            game_ui.textureFile = "resource/coke_ui.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
     }
         break;
     }
@@ -1121,6 +1150,7 @@ void keyboard(unsigned char key, int x, int y) {
         case GLUT_KEY_SPACE:
             if (potato_cooked_finish) {
                 SCENE++;
+                flip_bar_tx = -0.8f; flip_bar_dir = true;
             }
             if (!oil_timer && oil_scale_y <= 0.0f) oil_timer = !oil_timer;
             if (potato_fry_timer) {
@@ -1133,7 +1163,14 @@ void keyboard(unsigned char key, int x, int y) {
     case 9:
         switch (key) {
         case GLUT_KEY_SPACE:
-            if (!pour_coke)pour_coke = !pour_coke;
+            if (pour_done) {
+                SCENE++;
+            }
+            if (!pour_coke && flip_bar_tx <= -0.8f)pour_coke = !pour_coke;
+            else if (pour_coke && flip_bar_tx >= -0.8f) {
+                pour_coke = !pour_coke;
+                pour_done = true;
+            }
             break;
         }
         break;
@@ -1259,9 +1296,6 @@ void TimerFunction(int value)
                 if (flip_bar_tx <= -0.8f)flip_bar_dir = !flip_bar_dir;
             }
         }
-        if (potato_cut_success) {
-
-        }
     }
     break;
     case 8:
@@ -1292,6 +1326,11 @@ void TimerFunction(int value)
             temp_block.tx = urd_coke_tx(dre); temp_block.ty = 1.0f; temp_block.tz = urd_coke_tz(dre);
             cokeblock.push_back(temp_block);
             coke_scale_y += 0.02f;
+
+            flip_bar_tx += 0.05f;
+            if (flip_bar_tx >= 0.9f) {
+                pour_coke = false; pour_done = true;
+            }
         }
         for (int i = 0; i < cokeblock.size();) {
             if (cokeblock[i].ty >= -0.5f) {
