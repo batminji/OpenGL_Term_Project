@@ -239,6 +239,28 @@ public:
         return TR;
     }
 };
+class slice_food {
+public:
+    bool slice = 0;
+    float angle = 0.0f;
+    float max_angle = 0.0f;
+    glm::vec3 move = glm::vec3(0.0f);
+    float size = 0.0f;
+    void set(float s, int piece) {
+        size = s;
+        move.x = piece * size;
+    }
+    glm::mat4 my_tr() {
+        glm::mat4 TR = glm::translate(glm::mat4(1.0f), glm::vec3(-0.2f*slice, 1.0f, 0.0f)) * glm::translate(glm::mat4(1.0f), move) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f)) * glm::rotate(glm::mat4(1.0f), (float)glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f))*glm::scale(glm::mat4(1.0f), glm::vec3(size, 0.7, 0.7)) * glm::mat4(1.0f);
+        return TR;
+    }
+    void down() {
+        if (slice && angle < max_angle) angle += 2.0f;
+   }
+        
+};
+slice_food cheeses[40];
+int cheese_slice = 0;
 Plane Cube;
 Plane SpongeBob;
 Plane Krabs;
@@ -249,6 +271,7 @@ Plane CuttingBoard;
 Plane Potato;
 Plane PotatoChips;
 Plane FryerBasket;
+Plane knife;
 Plane Coke;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
@@ -425,6 +448,8 @@ GLvoid drawScene() {
         fryfan.move = glm::vec3(0.000000, 1.500000, 4.899998);
         LoadOBJ_single("tool/pan.obj", fryfan.mesh);
         fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
+        LoadOBJ_single("tool/knife.obj", knife.mesh);
+        knife.mesh[0].textureFile = "tool/knife.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
         LoadOBJ("Potato/potato.obj", Potato.mesh);
@@ -572,6 +597,29 @@ GLvoid drawScene() {
                 fryfan.mesh[j].Draw();
             }
         }
+    }
+    break;
+    case 4:
+
+    {  glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
+       Cube.mesh[0].textureFile = "food/cheese.png";
+       for (int j = 0; j < 40; j++) {
+           for (int i = 0; i < Cube.mesh.size(); ++i) {
+               Cube.mesh[0].Texturing();
+               Cube.mesh[i].Bind();
+               glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(cheeses[j].my_tr()));
+               Cube.mesh[i].Draw();
+           }
+       }
+       Cube.mesh[0].textureFile = "white.png";
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, -2.0f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(300.0f,300.0f, 300.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+        CuttingBoard.mesh[0].Texturing();
+        CuttingBoard.mesh[0].Bind();
+        CuttingBoard.mesh[0].Draw();
     }
     break;
     case 6:
@@ -811,6 +859,30 @@ GLvoid drawScene() {
         }
     }
     break;
+    case 4:{
+        { //시계
+            game_ui.textureFile = "resource/clock.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+            game_ui.textureFile = "resource/clock_pointer.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.2f)) * glm::translate(glm::mat4(1.0f), glm::vec3(+0.01875f, -0.01875f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(max(-360.0f, -time_angle)), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(-0.01875f, +0.01875f, 0.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //결과출력
+            if (game_result[4] != 0) {
+                (game_result[4] == 1) ? game_ui.textureFile = "resource/good.png" : game_ui.textureFile = "resource/fail.png";
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(time_angle / 300.0, time_angle / 300.0, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0f, 2.3f))));
+                game_ui.Texturing();
+                game_ui.Bind();
+                game_ui.Draw();
+            }
+        }
+    }
+          break;
     case 6:
     { 
         if (potato_cut_success) {
@@ -926,6 +998,13 @@ void keyboard(unsigned char key, int x, int y) {
         break; }
         }
         break;
+    case 4:
+        switch (key) {
+        case GLUT_KEY_SPACE:
+        {   if (time_angle < 360.0f && cheese_slice<40)cheeses[cheese_slice].slice =1 , cheese_slice++;
+        break; }
+        }
+    break;
     case 6:
         switch (key) {
         case GLUT_KEY_SPACE:
@@ -1033,7 +1112,7 @@ void TimerFunction(int value)
     }
     break;
     case 3: {
-        time_angle += 2.0f;
+        time_angle += 1.8f;
         if (time_angle < 360.0f) {
             bar_move += (bar_dir) * 0.1;
             if (bar_move > 0.45) bar_dir = -1, bar_move = 0.45;
@@ -1049,10 +1128,18 @@ void TimerFunction(int value)
                 jcnt++;
                 if (jcnt == 19)printf("%f", bread[0].rotate_z), jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
             }
-            if ((int)score[3][0] >= 20 && (int)score[3][1] >= 20) game_result[3] = 1,time_angle = 360.0f;
+            if ((int)score[3][0] / 10.0 >= 20 && (int) score[3][1] >= 20) game_result[3] = 1,time_angle = 360.0f;
         }
-        if (time_angle >= 360.0 && game_result[3] == 0) { if ((int)score[3][0] < 20 || (int)score[3][1] < 20) game_result[3] = 2; }
+        if (time_angle >= 360.0 && game_result[3] == 0) { if ((int)score[3][0] / 10.0 < 20 || (int)score[3][1] < 20) game_result[3] = 2; }
         if (time_angle > 440.0f) SCENE = 4,time_angle = 0;
+    }
+          break;
+    case 4:{
+        time_angle += 3.0f;
+        for (int i = 0; i < 40; i++) cheeses[i].down();
+        if (time_angle < 360.0f && cheese_slice >= 40) time_angle = 360.0f, game_result[4] = 1;
+        if (time_angle >= 360.0 && game_result[4] == 0) { if (cheese_slice < 40) game_result[4] = 2; }
+        if (time_angle > 540.0f) SCENE = 5, time_angle = 0;
     }
           break;
     case 6:
@@ -1440,7 +1527,11 @@ void LoadMTL(const char* FileName, const char* mtlFileName, vector<Mesh>& out_me
 }
 
 void main(int argc, char** argv)
-{
+{   
+    for (int i = -20; i < 20; i++) {
+        cheeses[i + 20].set(0.05,i);
+        cheeses[i + 20].max_angle =90.0f - ((i + 20) * 2.25f);
+    }
     srand((unsigned int)time(NULL));
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
