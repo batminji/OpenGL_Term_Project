@@ -211,7 +211,11 @@ public:
         glDrawArrays(GL_TRIANGLE_FAN, 0, vertex.size());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-    
+    void StripDraw() {
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertex.size());
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 };
 
 class Plane {
@@ -245,6 +249,7 @@ Plane CuttingBoard;
 Plane Potato;
 Plane PotatoChips;
 Plane FryerBasket;
+Plane Coke;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -374,7 +379,7 @@ int timer_cnt = 0;
 int krabs_talk = 0;
 float breath_ty = 0.5f;
 
-//게임화면
+// 게임화면
 UIMesh game_ui;
 UIMesh flip_bar;
 bool potato_cooked_finish = false;
@@ -428,6 +433,8 @@ GLvoid drawScene() {
         PotatoChips.mesh[0].textureFile = "PotatoChips/sang_Chips.png";
         LoadOBJ("FryerBasket/FryerBasket.obj", FryerBasket.mesh);
         FryerBasket.mesh[0].textureFile = "FryerBasket/FryerBasket.png";
+        LoadOBJ("Coke/Coke.obj", Coke.mesh);
+        Coke.mesh[0].textureFile = "Coke/Coke.png";
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -645,11 +652,25 @@ GLvoid drawScene() {
         glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
     }
     break;
+    case 8:
+    {
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, -0.5f, 0.5f));
+        TR = glm::scale(TR, glm::vec3(0.1f, 0.1f, 0.1f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+
+        for (int i = 0; i < Coke.mesh.size(); ++i) {
+            Coke.mesh[0].Texturing();
+            Coke.mesh[i].Bind();
+            Coke.mesh[i].FanDraw();
+        }
+    }
+        break;
     }
 
     // UI
     //////////////////////////////////////////////////////////////////////////////////////////////
-    glUniform3f(lightPosLocation, 0.0f, 0.0f, 10.0f);
+    glUniform3f(lightPosLocation, 0.0f, 0.0f, 5.0f);
     Vw = glm::mat4(1.0f);
     glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &Vw[0][0]);
     Pj = glm::mat4(1.0f);
@@ -795,7 +816,7 @@ GLvoid drawScene() {
         if (potato_cut_success) {
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
-            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
             game_ui.textureFile = "resource/good.png";
             game_ui.Texturing();
@@ -822,7 +843,7 @@ GLvoid drawScene() {
         }
         { //기본 바 
             TR = glm::mat4(1.0f);
-            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
             game_ui.textureFile = "resource/potato_ui.png";
             game_ui.Texturing();
@@ -1073,6 +1094,12 @@ void TimerFunction(int value)
         }
     }
     break;
+    case 8:
+    {
+        CameraPos = { 0.0f, 2.0f, 2.0f };
+        CameraAt = { 0.0f, 0.0f, 0.0f };
+    }
+        break;
     }
 
     glutPostRedisplay();
@@ -1339,7 +1366,6 @@ void LoadOBJ(const char* filename, vector<Mesh>& out_mesh) {
 
     cout << "obj load" << endl;
 }
-
 void LoadMTL(const char* FileName, const char* mtlFileName, vector<Mesh>& out_mesh, int& tex_cnt) {
     int curr_mesh = -1;
     ifstream in(mtlFileName, ios::in);
