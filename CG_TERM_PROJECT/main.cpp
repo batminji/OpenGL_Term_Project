@@ -467,7 +467,8 @@ bool breath_direction = true;
 bool spongebob_talk = true;
 bool patrick_talk = true;
 string Text = "resource/Text_";
-int Text_cnt = 0;
+string Guest_Text = "resource/Guest_Text_";
+int Text_cnt = 0, Guest_Text_cnt = 0;
 int timer_cnt = 0;
 int krabs_talk = 0;
 float breath_ty = 0.5f;
@@ -935,6 +936,20 @@ GLvoid drawScene() {
             story_background.Bind();
             story_background.Draw();
         }
+        TR = glm::mat4(1.0f);
+        if (Guest_Text_cnt % 2 == 0)TR = glm::translate(TR, glm::vec3(0.0f, 0.25f, 0.0f));
+        else TR = glm::translate(TR, glm::vec3(0.0f, -0.25f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(2.0f, 1.5f, 1.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+        string textfile = Guest_Text + to_string(Guest_Text_cnt) + ".png";
+
+        speech_bubble.textureFile = textfile;
+        speech_bubble.Texturing();
+        speech_bubble.Bind();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        speech_bubble.Draw();
+        glDisable(GL_BLEND);
     }
         break;
     case 3:
@@ -1285,6 +1300,18 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         }
         break;
+    case 2:
+    {
+        switch (key) {
+        case GLUT_KEY_SPACE:
+            if (Guest_Text_cnt < 3) {
+                ssystem->playSound(click_sound, 0, false, &channel);
+                Guest_Text_cnt++;
+            }
+            break;
+        }
+    }
+    break;
     case 3:
         switch (key) {
         case GLUT_KEY_SPACE:
@@ -1427,7 +1454,9 @@ void TimerFunction(int value)
         }
         if (Text_cnt == 7) {
             timer_cnt++;
-            if (timer_cnt == 60)SCENE = 2;
+            if (timer_cnt == 60) {
+                SCENE++; timer_cnt = 0;
+            }
         }
     }
     break;
@@ -1435,7 +1464,9 @@ void TimerFunction(int value)
     {
         CameraPos = { 0.0f, 2.0f, 3.0f };
         CameraAt = { 0.0f, 0.0f, -10.0f };
-        patrick_talk = !patrick_talk;
+        if (Guest_Text_cnt % 2 == 0) {
+            patrick_talk = !patrick_talk;
+        }
         if (breath_direction) {
             breath_ty += 0.005f;
             if (breath_ty >= 0.52f)breath_direction = !breath_direction;
@@ -1443,6 +1474,12 @@ void TimerFunction(int value)
         else {
             breath_ty -= 0.005f;
             if (breath_ty <= 0.5f)breath_direction = !breath_direction;
+        }
+        if (Guest_Text_cnt == 3) {
+            timer_cnt++;
+            if (timer_cnt == 60) {
+                SCENE++; timer_cnt = 0;
+            }
         }
     }
     break;
