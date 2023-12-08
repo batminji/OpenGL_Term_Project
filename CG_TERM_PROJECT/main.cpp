@@ -267,6 +267,7 @@ Plane CuttingBoard;
 Plane Potato;
 Plane PotatoChips;
 Plane FryerBasket;
+Plane knife;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -442,6 +443,8 @@ GLvoid drawScene() {
         fryfan.move = glm::vec3(0.000000, 1.500000, 4.899998);
         LoadOBJ_single("tool/pan.obj", fryfan.mesh);
         fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
+        LoadOBJ_single("tool/knife.obj", knife.mesh);
+        knife.mesh[0].textureFile = "tool/knife.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
         LoadOBJ("Potato/potato.obj", Potato.mesh);
