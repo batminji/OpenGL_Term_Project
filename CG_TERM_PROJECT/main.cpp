@@ -279,6 +279,7 @@ slice_food cheeses[40];
 int cheese_slice = 0;
 Plane Cube;
 Plane SpongeBob;
+Plane Patrick;
 Plane Krabs;
 Plane BikiniMap;
 Plane bread[2];
@@ -289,8 +290,6 @@ Plane PotatoChips;
 Plane FryerBasket;
 Plane knife;
 Plane Coke;
-
-float BackGround[] = { 0.0, 0.0, 0.0 };
 
 glm::mat4 TR = glm::mat4(1.0f);
 
@@ -384,9 +383,6 @@ int SCENE = 0;
 
 glm::vec3 CameraPos = { 5.0f, 5.0f, 5.0f };
 glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f };
-float rotate_y = 0.0f;
-
-float light_angle = 0.0;
 
 // 시작화면
 glm::vec3 START_CameraPos[4] = {
@@ -412,6 +408,7 @@ float title_logo_ty = 0.4f;
 bool Story_Show = true;
 bool breath_direction = true;
 bool spongebob_talk = true;
+bool patrick_talk = true;
 string Text = "resource/Text_";
 int Text_cnt = 0;
 int timer_cnt = 0;
@@ -450,6 +447,8 @@ GLvoid drawScene() {
         LoadOBJ("spongebob/spongebob.obj", SpongeBob.mesh);
         LoadMTL("spongebob", "spongebob/spongebob.mtl", SpongeBob.mesh, SpongeBob.texture_cnt);
         SpongeBob.mesh[1].textureFile = "spongebob/z3spon3.png";
+        LoadOBJ("Patrick/patrick.obj", Patrick.mesh);
+        LoadMTL("Patrick", "Patrick/patrick.mtl", Patrick.mesh, Patrick.texture_cnt);
         LoadOBJ("Mr Krabs/mrkrabs.obj", Krabs.mesh);
         LoadMTL("Mr Krabs", "Mr Krabs/mrkrabs.mtl", Krabs.mesh, Krabs.texture_cnt);
         LoadOBJ("BikiniMap/map.obj", BikiniMap.mesh);
@@ -593,7 +592,18 @@ GLvoid drawScene() {
     break;
     case 2:
     {
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, breath_ty - 0.8f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(0.2f, 0.2f, 0.2f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
+        for (int i = 0; i < Patrick.mesh.size(); ++i) {
+            if (patrick_talk) Patrick.mesh[0].textureFile = "Patrick/z4pat1.png";
+            else Patrick.mesh[0].textureFile = "Patrick/z4pat4.png";
+            Patrick.mesh[0].Texturing();
+            Patrick.mesh[i].Bind();
+            Patrick.mesh[i].Draw();
+        }
     }
     break;
     case 3:
@@ -618,7 +628,6 @@ GLvoid drawScene() {
     }
     break;
     case 4:
-
     {  glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(-2,4, 5), glm::vec3(0, 0, 0), cameraUp)));
        Cube.mesh[0].textureFile = "food/cheese.png";
        for (int j = 0; j < 40; j++) {
@@ -765,7 +774,7 @@ GLvoid drawScene() {
 
     // UI
     //////////////////////////////////////////////////////////////////////////////////////////////
-    glUniform3f(lightPosLocation, 0.0f, 0.0f, 5.0f);
+    glUniform3f(lightPosLocation, 0.0f, 0.0f, 20.0f);
     Vw = glm::mat4(1.0f);
     glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &Vw[0][0]);
     Pj = glm::mat4(1.0f);
@@ -835,6 +844,20 @@ GLvoid drawScene() {
         glDisable(GL_BLEND);
     }
     break;
+    case 2:
+    {
+        { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/guest_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
+    }
+        break;
     case 3:
     {
         { //배경
@@ -906,7 +929,8 @@ GLvoid drawScene() {
         }
     }
     break;
-    case 4:{
+    case 4:
+    {
         { //배경
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
@@ -1243,6 +1267,21 @@ void TimerFunction(int value)
         if (Text_cnt == 7) {
             timer_cnt++;
             if (timer_cnt == 60)SCENE = 2;
+        }
+    }
+    break;
+    case 2:
+    {
+        CameraPos = { 0.0f, 2.0f, 3.0f };
+        CameraAt = { 0.0f, 0.0f, -10.0f };
+        patrick_talk = !patrick_talk;
+        if (breath_direction) {
+            breath_ty += 0.005f;
+            if (breath_ty >= 0.52f)breath_direction = !breath_direction;
+        }
+        else {
+            breath_ty -= 0.005f;
+            if (breath_ty <= 0.5f)breath_direction = !breath_direction;
         }
     }
     break;
