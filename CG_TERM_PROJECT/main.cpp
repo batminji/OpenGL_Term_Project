@@ -214,6 +214,11 @@ public:
         glDrawArrays(GL_TRIANGLE_FAN, 0, vertex.size());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+    void StripDraw() {
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertex.size());
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 };
 
 class Plane {
@@ -246,7 +251,7 @@ Plane fryfan;
 Plane CuttingBoard;
 Plane Potato;
 Plane PotatoChips;
-Plane FlyerBasket;
+Plane FryerBasket;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -408,9 +413,8 @@ GLvoid drawScene() {
         Potato.mesh[0].textureFile = "Potato/potato.png";
         LoadOBJ("PotatoChips/Chips.obj", PotatoChips.mesh);
         PotatoChips.mesh[0].textureFile = "PotatoChips/Chips.png";
-        cout << "¤µ¤²";
-        LoadOBJ("Fryer Basket/FrierBasket.obj", FlyerBasket.mesh);
-        LoadMTL("Fryer Basket", "Fryer Basket/FrierBasket.mtl", FlyerBasket.mesh, FlyerBasket.texture_cnt);
+        LoadOBJ("FryerBasket/FryerBasket.obj", FryerBasket.mesh);
+        FryerBasket.mesh[0].textureFile = "FryerBasket/FryerBasket.png";
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -590,15 +594,15 @@ GLvoid drawScene() {
         }
 
         TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
-        TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
+        TR = glm::translate(TR, glm::vec3(0.0f, -0.2f, -2.0f));
+        TR = glm::rotate(TR, (float)glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(1.0f, 0.2f, 0.2f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
-        for (int i = 0; i < FlyerBasket.mesh.size(); ++i) {
-            FlyerBasket.mesh[i].Texturing();
-            FlyerBasket.mesh[i].Bind();
-            FlyerBasket.mesh[i].Draw();
+        for (int i = 0; i < FryerBasket.mesh.size(); ++i) {
+            FryerBasket.mesh[0].Texturing();
+            FryerBasket.mesh[i].Bind();
+            FryerBasket.mesh[i].Draw();
         }
     }
     break;
