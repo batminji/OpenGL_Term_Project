@@ -382,7 +382,7 @@ int timer_cnt = 0;
 int krabs_talk = 0;
 float breath_ty = 0.5f;
 
-
+UIMesh game_ui;
 
 
 
@@ -404,7 +404,9 @@ GLvoid drawScene() {
         bread[1].move+= glm::vec3(0.0, 0, 0);
         LoadOBJ_single("food/MUFF_T_HE.obj", bread[1].mesh);
         bread[1].mesh[0].textureFile = "food/MUFF_T_HE_01.png";
-        fryfan.size = 1.0f, fryfan.rotate_x =0.0f;
+        fryfan.size = 1.0f;
+        fryfan.rotate_x = -100.0f;
+        fryfan.move = glm::vec3(0.000000, 1.500000, 4.899998);
         LoadOBJ_single("tool/pan.obj",fryfan.mesh);
         fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
@@ -678,6 +680,7 @@ GLvoid drawScene() {
     break;
     case 3:
     {
+        { //배경
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
         TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
@@ -685,7 +688,29 @@ GLvoid drawScene() {
         story_background.textureFile = "resource/story_bg_0.png";
         story_background.Texturing();
         story_background.Bind();
-        story_background.Draw();
+        story_background.Draw(); }
+
+        { //기본 바 
+            game_ui.textureFile = "resource/fry_ui.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //볶기 바 
+            game_ui.textureFile = "resource/rotate_bar.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //뒤집기 바 
+            game_ui.textureFile = "resource/fry_bar.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
     }
     break;
     }
@@ -741,8 +766,20 @@ void keyboard(unsigned char key, int x, int y) {
 void SpecialKeyboard(int key, int x, int y)
 {
     switch (key) {
-
+    case GLUT_KEY_RIGHT:
+        if (SCENE == 3) bread[0].move.z += 0.1;
+        break;
+    case GLUT_KEY_LEFT:
+        if (SCENE == 3) bread[0].move.z -= 0.1;
+        break; 
+    case GLUT_KEY_UP:
+        if (SCENE == 3) bread[0].move.y += 0.1;
+            break; 
+    case GLUT_KEY_DOWN:
+        if (SCENE == 3) bread[0].move.y -= 0.1;
+                break;
     }
+    glutPostRedisplay();
 }
 
 void TimerFunction(int value)
@@ -821,6 +858,7 @@ double mx, my;
 double sx, sy;
 double ex, ey;
 bool left_down = 0;
+float bread_angle = 0;
 void Mouse(int button, int state, int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
@@ -841,6 +879,7 @@ void Mouse(int button, int state, int x, int y)
     else {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             printf("fryfan_rotate : (%f, %f, %f )\n",fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
+            printf("bread[0].move = glm::vec3(%f, %f, %f )\n", bread[0].move.x, bread[0].move.y, bread[0].move.z);
         }
         if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 
@@ -853,13 +892,21 @@ void Motion(int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
     my = -(((double)y - WINDOWY / 2.0) / (WINDOWY / 2.0));
-    if (left_down) {
-        ex = mx;
-        ey = my;
-        CameraAt.x += (ex - sx);
-        CameraAt.y += (ey - sy);
+    if (SCENE != 3) {
+        if (left_down) {
+            ex = mx;
+            ey = my;
+            CameraAt.x += (ex - sx);
+            CameraAt.y += (ey - sy);
+        }
+    }
+    else {
+        bread_angle = atan2(mx, my);
+        bread[0].move = glm::vec3(1.3*cos(bread_angle) , 0 , 1.3*sin(bread_angle)-1.3);
+        bread[1].move = glm::vec3(1.3 * cos(bread_angle+glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f))-1.3);
     }
 
+    glutPostRedisplay();
 }
 
 GLchar* filetobuf(const char* file) {
