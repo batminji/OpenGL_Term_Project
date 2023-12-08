@@ -157,7 +157,7 @@ public:
     unsigned char* data;
 
     void Texturing() {
-        int width, height, nrChannels;
+        int width{}, height{}, nrChannels{};
         data = stbi_load(textureFile.c_str(), &width, &height, &nrChannels, 0);
 
         glGenTextures(1, &texture);
@@ -234,6 +234,7 @@ Plane Krabs;
 Plane BikiniMap;
 Plane bread[2];
 Plane fryfan;
+Plane CuttingBoard;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -331,7 +332,7 @@ glm::vec3 CameraPos = { 5.0f, 5.0f, 5.0f };
 glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f };
 float rotate_y = 0.0f;
 
-float light_x = 0.0f, light_z = 5.0f;
+float light_x = 0.0f, light_y = 5.0f, light_z = 5.0f;
 float light_angle = 0.0;
 
 // 시작화면
@@ -389,7 +390,8 @@ GLvoid drawScene() {
         fryfan.size = 0.1f; 
         LoadOBJ("tool/frying_pan.obj",fryfan.mesh);
         LoadMTL("tool", "tool/frying_pan.mtl",fryfan.mesh, fryfan.texture_cnt);
-       
+        LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
+        CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -407,7 +409,7 @@ GLvoid drawScene() {
     stbi_set_flip_vertically_on_load(true);
     glViewport(0, 0, WINDOWX, WINDOWY);
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);    //배경
 
     glUseProgram(shaderID);
@@ -430,7 +432,7 @@ GLvoid drawScene() {
     glm::vec3 cameraDirection;
     glm::vec3 cameraUp;
 
-    glUniform3f(lightPosLocation, light_x, 1.0f, light_z);
+    glUniform3f(lightPosLocation, light_x, light_y, light_z);
     glUniform3f(lightColorLocation, 1.0, 1.0, 1.0);
 
     // 그리기 코드    
@@ -507,7 +509,6 @@ GLvoid drawScene() {
     }
     break;
     case 3:
-
     {  
      
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(3.6, 6.59, 3.7),glm::vec3(-2.47, -1.28, -2.0), cameraUp)));
@@ -528,6 +529,21 @@ GLvoid drawScene() {
     }
     }
     break;
+    case 6:
+    {
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(150.0f, 150.0f, 150.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+
+        for (int i = 0; i < CuttingBoard.mesh.size(); ++i) {
+            CuttingBoard.mesh[0].Texturing();
+            CuttingBoard.mesh[i].Bind();
+            CuttingBoard.mesh[i].Draw();
+        }
+    }
+        break;
     }
 
     // UI
@@ -610,6 +626,11 @@ GLvoid drawScene() {
         story_background.Draw();
     }
     break;
+    case 6:
+    {
+
+    }
+        break;
     }
 
     glutSwapBuffers();
@@ -719,6 +740,12 @@ void TimerFunction(int value)
     case 2:
     {
 
+    }
+    break;
+    case 6:
+    {
+        CameraPos = { 0.0f, 2.0f, 2.0f };
+        CameraAt = { 0.0f, 0.0f, 0.0f };
     }
     break;
     }
