@@ -241,6 +241,7 @@ Plane bread[2];
 Plane fryfan;
 Plane CuttingBoard;
 Plane Potato;
+Plane PotatoChips;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -400,6 +401,8 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
         LoadOBJ("Potato/potato.obj", Potato.mesh);
         Potato.mesh[0].textureFile = "Potato/potato.png";
+        LoadOBJ("PotatoChips/Chips.obj", PotatoChips.mesh);
+        PotatoChips.mesh[0].textureFile = "PotatoChips/Chips.png";
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -564,6 +567,21 @@ GLvoid drawScene() {
         }
     }
         break;
+    case 7:
+    {
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+
+        for (int i = 0; i < PotatoChips.mesh.size(); ++i) {
+            PotatoChips.mesh[0].Texturing();
+            PotatoChips.mesh[i].Bind();
+            PotatoChips.mesh[i].Draw();
+        }
+    }
+    break;
     }
 
     // UI
