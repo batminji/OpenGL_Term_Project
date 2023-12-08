@@ -394,8 +394,8 @@ GLvoid drawScene() {
         LoadOBJ_single("food/MUFF_T_HE.obj", bread[1].mesh);
         bread[1].mesh[0].textureFile = "food/MUFF_T_HE_01.png";
         fryfan.size = 0.1f; 
-        LoadOBJ("tool/frying_pan.obj",fryfan.mesh);
-        LoadMTL("tool", "tool/frying_pan.mtl",fryfan.mesh, fryfan.texture_cnt);
+        LoadOBJ("tool/FryingPan.obj",fryfan.mesh);
+        LoadMTL("tool", "tool/FryingPan.mtl",fryfan.mesh, fryfan.texture_cnt);
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
         LoadOBJ("Potato/potato.obj", Potato.mesh);
