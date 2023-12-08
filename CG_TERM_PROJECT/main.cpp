@@ -573,6 +573,7 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].Draw();
 
 
+
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, 0.2f, 0.0f));
         TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -805,9 +806,9 @@ GLvoid drawScene() {
             game_ui.Bind();
             game_ui.Draw();
         }
-        
+
     }
-        break;
+    break;
     }
 
     glutSwapBuffers();
@@ -843,18 +844,18 @@ void keyboard(unsigned char key, int x, int y) {
     case 3:
         switch (key) {
         case 'z':
-           fryfan.rotate_z -= 10.0f;
+            fryfan.rotate_z -= 10.0f;
             break;
         case 'Z':
-            fryfan.rotate_z +=  10.0f;
+            fryfan.rotate_z += 10.0f;
             break;
-        case 'x': fryfan.rotate_x  -= 10.0f; break;
+        case 'x': fryfan.rotate_x -= 10.0f; break;
         case 'X': fryfan.rotate_x += 10.0f; break;
-        case 'y': fryfan.rotate_y  -= 10.0f; break;
-        case 'Y': fryfan.rotate_y  += 10.0f; break;
+        case 'y': fryfan.rotate_y -= 10.0f; break;
+        case 'Y': fryfan.rotate_y += 10.0f; break;
         case GLUT_KEY_SPACE:
-        {   if (bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt ==0)jcnt =1, score[3][1] += 4.0f;
-            break; }
+        {   if (bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0)jcnt = 1, score[3][1] += 4.0f;
+        break; }
         }
         break;
     case 6:
@@ -874,7 +875,7 @@ void keyboard(unsigned char key, int x, int y) {
             }
             break;
         }
-    break;
+        break;
     }
     glutPostRedisplay();
 }
@@ -887,13 +888,13 @@ void SpecialKeyboard(int key, int x, int y)
         break;
     case GLUT_KEY_LEFT:
         if (SCENE == 3) bread[0].move.z -= 0.1;
-        break; 
+        break;
     case GLUT_KEY_UP:
         if (SCENE == 3) bread[0].move.y += 0.1;
-            break; 
+        break;
     case GLUT_KEY_DOWN:
         if (SCENE == 3) bread[0].move.y -= 0.1;
-                break;
+        break;
     }
     glutPostRedisplay();
 }
@@ -949,9 +950,9 @@ void TimerFunction(int value)
     break;
     case 3: {
         bar_move += (bar_dir) * 0.1;
-        if (bar_move > 0.45) bar_dir = -1, bar_move =0.45;
+        if (bar_move > 0.45) bar_dir = -1, bar_move = 0.45;
         if (bar_move < -0.45)bar_dir = 1, bar_move = -0.45;
-        if (jcnt > 0&& jcnt< 10) {
+        if (jcnt > 0 && jcnt < 10) {
             fryfan.rotate_x += 2.0f;
             for (int c = 0; c < 2; c++) bread[c].move.y += 0.4, bread[c].rotate_z += 10.0f;
             jcnt++;
@@ -960,7 +961,7 @@ void TimerFunction(int value)
             fryfan.rotate_x -= 2.0f;
             for (int c = 0; c < 2; c++) bread[c].move.y -= 0.4, bread[c].rotate_z += 10.0f;
             jcnt++;
-            if (jcnt == 19)printf("%f",bread[0].rotate_z), jcnt = 0 ,bread[0].move.y =0, bread[1].move.y= 0,fryfan.rotate_x =-100.0f;
+            if (jcnt == 19)printf("%f", bread[0].rotate_z), jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
         }
     }
           break;
@@ -1028,14 +1029,14 @@ void Mouse(int button, int state, int x, int y)
     }
     else {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-            printf("fryfan_rotate : (%f, %f, %f )\n",fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
+            printf("fryfan_rotate : (%f, %f, %f )\n", fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
             printf("score =%f\n", score[3][0]);
-            printf("bread_angle =%f\n",bread_angle);
+            printf("bread_angle =%f\n", bread_angle);
         }
         if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 
         }
-        
+
     }
 
 }
@@ -1054,12 +1055,12 @@ void Motion(int x, int y)
     }
     else {
         if (jcnt == 0) {
-        fryfan.rotate_x = -100.0f + fabs(atan2(mx, my));
-        fryfan.rotate_z = fabs(atan2(mx, my));
-        score[3][0] += fabs(bread_angle - atan2(mx, my));
-        bread_angle = atan2(mx, my);
-        bread[0].move = glm::vec3(1.3 * cos(bread_angle), 0, 1.3 * sin(bread_angle) - 1.3);
-        bread[1].move = glm::vec3(1.3 * cos(bread_angle + glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f)) - 1.3);
+            fryfan.rotate_x = -100.0f + fabs(atan2(mx, my));
+            fryfan.rotate_z = fabs(atan2(mx, my));
+            score[3][0] += fabs(bread_angle - atan2(mx, my));
+            bread_angle = atan2(mx, my);
+            bread[0].move = glm::vec3(1.3 * cos(bread_angle), 0, 1.3 * sin(bread_angle) - 1.3);
+            bread[1].move = glm::vec3(1.3 * cos(bread_angle + glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f)) - 1.3);
         }
     }
 
