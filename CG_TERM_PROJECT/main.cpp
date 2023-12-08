@@ -717,7 +717,12 @@ GLvoid drawScene() {
         }
         { //½Ã°è
             game_ui.textureFile = "resource/clock.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+            game_ui.textureFile = "resource/clock_pointer.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))* glm::rotate(glm::mat4(1.0f), glm::radians(time_angle), glm::vec3(0, 0, 1))* glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.2f))));
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
@@ -747,13 +752,13 @@ GLvoid drawScene() {
             game_ui.Texturing();
             game_ui.Bind();
             for (int c = 0; c < (int)score[3][1] && c < 20; c++) {
-                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 3.0f))));
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 2.1f))));
                 game_ui.Draw();
             }
         }
         {
             game_ui.textureFile = "resource/flip_bar.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(bar_move, 0.0f, 4.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(bar_move, 0.0f, 2.2f))));
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
@@ -957,6 +962,7 @@ void TimerFunction(int value)
     }
     break;
     case 3: {
+        time_angle += 1.0f;
         bar_move += (bar_dir) * 0.1;
         if (bar_move > 0.45) bar_dir = -1, bar_move = 0.45;
         if (bar_move < -0.45)bar_dir = 1, bar_move = -0.45;
