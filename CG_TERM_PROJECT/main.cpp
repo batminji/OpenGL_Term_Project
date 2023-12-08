@@ -394,7 +394,7 @@ float potato_chips_trans[7][2] = {
     {0.5f, 0.1f}, {0.3f, -0.1f}, {0.2f, 0.0f}, {0.0f, -0.1f},
     {-0.2f, 0.1f}, {-0.3f, -0.1f}, {-0.5f, 0.1f}
 };
-bool potato_show = true;
+bool potato_show = true, potato_cut_success = false;
 float potato_scale_x = 0.05f, potato_tx = 0.0f;
 
 
@@ -635,7 +635,7 @@ GLvoid drawScene() {
         TR = glm::translate(TR, glm::vec3(0.0f, -1.0f, -1.0f));
         TR = glm::scale(TR, glm::vec3(0.8f, oil_scale_y, 0.5f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
-        glUniform4f(objColorLocation, 1.0f, 1.0f, 0.0f, 0.5f);
+        glUniform4f(objColorLocation, 0.941, 0.811, 0.349, 0.5f);
         for (int i = 0; i < Cube.mesh.size(); ++i) {
             Cube.mesh[0].Texturing();
             Cube.mesh[i].Bind();
@@ -895,7 +895,7 @@ void keyboard(unsigned char key, int x, int y) {
                     potato_scale_x -= 0.007; potato_tx -= 0.1f;
                     if (potato_gauge >= 21) {
                         potato_gauge = 20;
-                        potato_show = false;
+                        potato_show = false; potato_cut_success = true;
                     }
                 }
             }
@@ -1012,13 +1012,18 @@ void TimerFunction(int value)
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
-        if (flip_bar_dir) {
-            flip_bar_tx += 0.1f;
-            if (flip_bar_tx >= 0.8f)flip_bar_dir = !flip_bar_dir;
+        if (potato_show) {
+            if (flip_bar_dir) {
+                flip_bar_tx += 0.1f;
+                if (flip_bar_tx >= 0.8f)flip_bar_dir = !flip_bar_dir;
+            }
+            else {
+                flip_bar_tx -= 0.1f;
+                if (flip_bar_tx <= -0.8f)flip_bar_dir = !flip_bar_dir;
+            }
         }
-        else {
-            flip_bar_tx -= 0.1f;
-            if (flip_bar_tx <= -0.8f)flip_bar_dir = !flip_bar_dir;
+        if (potato_cut_success) {
+
         }
     }
     break;
