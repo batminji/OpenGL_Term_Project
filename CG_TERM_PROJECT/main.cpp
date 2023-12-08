@@ -237,6 +237,7 @@ public:
     float rotate_y = 0.0f;
     float rotate_z = 0.0f;
     float size = 1.0f;
+    glm::vec3 size_more = glm::vec3(1.0f);
     glm::vec3 move = glm::vec3(0.0f);
 
     glm::mat4 my_TR() {
@@ -246,7 +247,9 @@ public:
         TR = glm::rotate(TR, (float)glm::radians(rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
         TR = glm::rotate(TR, (float)glm::radians(rotate_z), glm::vec3(0.0f, 0.0f, 1.0f));
         TR = glm::scale(TR, glm::vec3(size));
+        TR = glm::scale(TR, glm::vec3(size_more));
         return TR;
+
     }
 };
 class slice_food {
@@ -290,7 +293,7 @@ Plane PotatoChips;
 Plane FryerBasket;
 Plane knife;
 Plane Coke;
-
+Plane meat;
 glm::mat4 TR = glm::mat4(1.0f);
 
 void keyboard(unsigned char, int, int);
@@ -309,6 +312,7 @@ struct Ray {
     glm::vec3 origin;    // 광선의 시작점
     glm::vec3 direction; // 광선의 방향
 };
+Ray ray;
 struct AABB {
     glm::vec3 min; // 최소 꼭짓점
     glm::vec3 max; // 최대 꼭짓점
@@ -332,25 +336,29 @@ AABB createBoundingBox(const std::vector<glm::vec3>& vertices, const glm::mat4& 
     return boundingBox;
 }
 bool checkRayAABBCollision(const Ray& ray, const AABB& aabb) {
-    // 먼저 AABB의 바운딩 볼륨과의 충돌 검사
-    if (!checkAABBCollision(aabb, aabb)) {
-        return false; // 충돌하지 않음
+    // 각 축별로 최소 및 최대 투영을 계산
+    float tMinX = (aabb.min.x - ray.origin.x) / ray.direction.x;
+    float tMaxX = (aabb.max.x - ray.origin.x) / ray.direction.x;
+
+    float tMinY = (aabb.min.y - ray.origin.y) / ray.direction.y;
+    float tMaxY = (aabb.max.y - ray.origin.y) / ray.direction.y;
+
+    float tMinZ = (aabb.min.z - ray.origin.z) / ray.direction.z;
+    float tMaxZ = (aabb.max.z - ray.origin.z) / ray.direction.z;
+
+    // 최종 최소 및 최대 투영을 계산
+    float tMin = glm::max(glm::max(glm::min(tMinX, tMaxX), glm::min(tMinY, tMaxY)), glm::min(tMinZ, tMaxZ));
+    float tMax = glm::min(glm::min(glm::max(tMinX, tMaxX), glm::max(tMinY, tMaxY)), glm::max(tMinZ, tMaxZ));
+
+    // 유효한 충돌이 있는지 확인
+    if (tMax > 0.0f && tMin <= tMax) {
+        // 최대 투영이 0 이상이면서 최소 투영이 최대 투영 이하인 경우, 충돌이 발생했음
+        return true;
     }
-
-    // 광선과 AABB의 바운딩 볼륨 간의 충돌이 확인되면 정확한 광선-바운딩 볼륨 충돌을 검사
-    glm::vec3 invDirection = 1.0f / ray.direction; // 광선의 반대 방향
-
-    glm::vec3 tMin = (aabb.min - ray.origin) * invDirection;
-    glm::vec3 tMax = (aabb.max - ray.origin) * invDirection;
-
-    glm::vec3 tEntry = glm::min(tMin, tMax);
-    glm::vec3 tExit = glm::max(tMin, tMax);
-
-    float tEntryMax = std::max(std::max(tEntry.x, tEntry.y), tEntry.z);
-    float tExitMin = std::min(std::min(tExit.x, tExit.y), tExit.z);
-
-    // 충돌 여부 확인
-    return tEntryMax <= tExitMin;
+    else {
+        // 그 외의 경우는 충돌이 발생하지 않음
+        return false;
+    }
 }
 
 void make_vertexShaders()
@@ -487,6 +495,7 @@ bool potato_show = true, potato_cut_success = false;
 float potato_scale_x = 0.05f, potato_tx = 0.0f;
 bool pour_coke = false, pour_done = false;
 float coke_scale_y = 0.0f;
+bool meat_click = 0;
 
 GLvoid drawScene() {
     if (start) {
@@ -531,7 +540,10 @@ GLvoid drawScene() {
             press_space.textureFile = "resource/press_space_bar.png";
             flip_bar.textureFile = "resource/flip_bar.png";
         }
-
+        LoadOBJ_single("food/MEAT.obj", meat.mesh);
+        meat.mesh[0].textureFile = "food/MEAT_01.png";
+        meat.size = 0.6; meat.move.z -= 0.3;
+        
         // 사운드
         result = System_Create(&ssystem);
         if (result != FMOD_OK)
@@ -696,6 +708,24 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].Texturing();
         CuttingBoard.mesh[0].Bind();
         CuttingBoard.mesh[0].Draw();
+    }
+    break;
+    case 5:
+    {
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
+
+            for (Mesh m : meat.mesh) {
+                meat.mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(meat.my_TR()));
+                m.Draw();
+            }
+            for (int j = 0; j < fryfan.mesh.size(); j++) {
+                fryfan.mesh[0].Texturing();
+                fryfan.mesh[j].Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(fryfan.my_TR()));
+                fryfan.mesh[j].Draw();
+            }
     }
     break;
     case 7:
@@ -1013,6 +1043,77 @@ GLvoid drawScene() {
         }
     }
           break;
+    case 5:{
+
+        { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/fry_station_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
+        { //시계
+            game_ui.textureFile = "resource/clock.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+            game_ui.textureFile = "resource/clock_pointer.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.2f)) * glm::translate(glm::mat4(1.0f), glm::vec3(+0.01875f, -0.01875f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(max(-360.0f, -time_angle)), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(-0.01875f, +0.01875f, 0.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //기본 바 
+            game_ui.textureFile = "resource/meat_ui.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //누르기 바 
+            game_ui.textureFile = "resource/rotate_bar.png";
+
+            game_ui.Texturing();
+            game_ui.Bind();
+            for (int c = 0; c < (int)score[5][0] / 10.0 && c < 20; c++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 3.0f))));
+                game_ui.Draw();
+            }
+
+
+        }
+        { //뒤집기 바 
+            game_ui.textureFile = "resource/fry_bar.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            for (int c = 0; c < (int)score[5][1] && c < 20; c++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 2.1f))));
+                game_ui.Draw();
+            }
+        }
+        {
+            game_ui.textureFile = "resource/flip_bar.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(bar_move, 0.0f, 2.2f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //결과출력
+            if (game_result[5] != 0) {
+                (game_result[5] == 1) ? game_ui.textureFile = "resource/good.png" : game_ui.textureFile = "resource/fail.png";
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(time_angle / 300.0, time_angle / 300.0, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0f, 2.3f))));
+                game_ui.Texturing();
+                game_ui.Bind();
+                game_ui.Draw();
+            }
+        }
+    }
+          break;
     case 7:
     { 
         { //배경
@@ -1198,6 +1299,17 @@ void keyboard(unsigned char key, int x, int y) {
         break; }
         }
     break;
+    case 5:
+        switch (key) {
+        case GLUT_KEY_SPACE:
+        {   if (time_angle < 360.0f && bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0) { jcnt = 1, score[5][1] += 4.0f; 
+        meat_click = 0;
+        meat.size_more = glm::vec3(1.0f);
+        meat.move.y = 0.0f;
+        }
+        break; }
+        }
+    break;
     case 7:
         switch (key) {
         case GLUT_KEY_SPACE:
@@ -1367,7 +1479,27 @@ void TimerFunction(int value)
           break;
     case 5: 
     {
-    
+        time_angle += 1.8f;
+        if (time_angle < 360.0f) {
+            if (meat_click) score[5][0] += 5.0f;
+            bar_move += (bar_dir) * 0.1;
+            if (bar_move > 0.45) bar_dir = -1, bar_move = 0.45;
+            if (bar_move < -0.45)bar_dir = 1, bar_move = -0.45;
+            if (jcnt > 0 && jcnt < 10) {
+                fryfan.rotate_x += 2.0f;
+                meat.move.y += 0.4, meat.rotate_z += 10.0f;
+                jcnt++;
+            }
+            if (jcnt >= 9) {
+                fryfan.rotate_x -= 2.0f;
+                meat.move.y -= 0.4, meat.rotate_z += 10.0f;
+                jcnt++;
+                if (jcnt == 19) jcnt = 0,meat.move.y = 0, fryfan.rotate_x = -100.0f;
+            }
+            if ((int)score[5][0] / 10.0 >= 20 && (int)score[5][1] >= 20) game_result[5] = 1, time_angle = 360.0f;
+        }
+        if (time_angle >= 360.0 && game_result[5] == 0) { if ((int)score[5][0] / 10.0 < 20 || (int)score[5][1] < 20) game_result[5] = 2; }
+        if (time_angle > 440.0f) SCENE = 6, time_angle = 0;
     }
           break;
     case 7:
@@ -1446,7 +1578,7 @@ void Mouse(int button, int state, int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
     my = -(((double)y - WINDOWY / 2.0) / (WINDOWY / 2.0));
-    if (SCENE != 3)
+    if (SCENE != 5)
     {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             printf("POS : (%f, %f, %f )\n", CameraPos.x, CameraPos.y, CameraPos.z);
@@ -1460,10 +1592,33 @@ void Mouse(int button, int state, int x, int y)
         }
     }
     else {
-        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && jcnt == 0) {
+
+            glm::vec4 viewport = glm::vec4(0.0f, 0.0f,WINDOWX,WINDOWY); // 화면의 크기
+            glm::vec3 mousePos = glm::vec3(x, WINDOWY - y, 0.0f); // 화면 좌표 (Y 좌표는 아래에서 위로 증가하는 방식으로 사용됩니다)
+          
+            glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), glm::vec3(0,1,0));
+            glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), (float)WINDOWX / (float)WINDOWY, 0.1f, 100.0f);
+          
+            ray.origin  = glm::unProject(glm::vec3(mousePos.x, mousePos.y, 0.0f), viewMatrix, projectionMatrix, viewport);
+            ray.direction = glm::normalize(glm::unProject(glm::vec3(mousePos.x, mousePos.y, 0.0f), viewMatrix, projectionMatrix, viewport) - glm::vec3(0, 6, 2));
+            vector <glm::vec3> temp_v;
+            for (int i = 0; i <meat.mesh.size(); i++) temp_v.insert(temp_v.end(), meat.mesh[i].vertex.begin(), meat.mesh[i].vertex.end());
+          
+                AABB aabb = createBoundingBox(temp_v, meat.my_TR());
+                if (checkRayAABBCollision(ray,aabb)) {
+                    meat_click = 1;
+                    meat.size_more = glm::vec3(1.1f,0.7f,1.1f);
+                    meat.move.y = -0.1;
+                }
+            
         }
         if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-
+            if (jcnt == 0) {
+                meat_click = 0;
+                meat.size_more = glm::vec3(1.0f);
+                meat.move.y = 0.0f;
+            }
         }
 
     }
