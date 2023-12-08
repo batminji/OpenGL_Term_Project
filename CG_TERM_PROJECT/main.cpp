@@ -383,7 +383,9 @@ int krabs_talk = 0;
 float breath_ty = 0.5f;
 
 UIMesh game_ui;
-
+bool potato_cooked_finish = false;
+bool potato_fry_timer = false;
+float flip_bar_tx = -0.8f;
 
 
 
@@ -414,7 +416,7 @@ GLvoid drawScene() {
         LoadOBJ("Potato/potato.obj", Potato.mesh);
         Potato.mesh[0].textureFile = "Potato/potato.png";
         LoadOBJ("PotatoChips/Chips.obj", PotatoChips.mesh);
-        PotatoChips.mesh[0].textureFile = "PotatoChips/Chips.png";
+        PotatoChips.mesh[0].textureFile = "PotatoChips/sang_Chips.png";
         LoadOBJ("FryerBasket/FryerBasket.obj", FryerBasket.mesh);
         FryerBasket.mesh[0].textureFile = "FryerBasket/FryerBasket.png";
         {
@@ -458,7 +460,8 @@ GLvoid drawScene() {
     glm::vec3 cameraUp;
 
     glUniform3f(lightPosLocation, light_x, light_y, light_z);
-    glUniform3f(lightColorLocation, 1.0, 1.0, 1.0);
+    glUniform4f(lightColorLocation, 1.0, 1.0, 1.0, 1.0f);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 0.5f);
 
     // 그리기 코드    
 
@@ -590,6 +593,9 @@ GLvoid drawScene() {
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
         for (int i = 0; i < PotatoChips.mesh.size(); ++i) {
+            if (flip_bar_tx >= -0.8f && flip_bar_tx <= -0.1f)PotatoChips.mesh[0].textureFile = "PotatoChips/sang_Chips.png";
+            else if (flip_bar_tx >= -0.1f && flip_bar_tx <= 0.1f)PotatoChips.mesh[0].textureFile = "PotatoChips/Chips.png";
+            else if (flip_bar_tx >= 0.6f)PotatoChips.mesh[0].textureFile = "PotatoChips/tan_Chips.png";
             PotatoChips.mesh[0].Texturing();
             PotatoChips.mesh[i].Bind();
             PotatoChips.mesh[i].Draw();
@@ -688,7 +694,8 @@ GLvoid drawScene() {
         story_background.textureFile = "resource/story_bg_0.png";
         story_background.Texturing();
         story_background.Bind();
-        story_background.Draw(); }
+        story_background.Draw(); 
+        }
 
         { //기본 바 
             game_ui.textureFile = "resource/fry_ui.png";
@@ -713,6 +720,32 @@ GLvoid drawScene() {
         }
     }
     break;
+    case 7:
+    {
+        
+        { // 움직이는 바
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            game_ui.textureFile = "resource/flip_bar.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //기본 바 
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            game_ui.textureFile = "resource/fry_potato_ui.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        
+    }
+        break;
     }
 
     glutSwapBuffers();
@@ -759,6 +792,17 @@ void keyboard(unsigned char key, int x, int y) {
         case 'Y': fryfan.rotate_y  += 10.0f; break;
         }
         break;
+    case 7:
+        switch (key) {
+        case GLUT_KEY_SPACE:
+            if (!potato_fry_timer && flip_bar_tx <= -0.8f)potato_fry_timer = !potato_fry_timer;
+            else if (potato_fry_timer) {
+                potato_fry_timer = !potato_fry_timer;
+                potato_cooked_finish = true;
+            }
+            break;
+        }
+    break;
     }
     glutPostRedisplay();
 }
@@ -846,6 +890,13 @@ void TimerFunction(int value)
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
+        if (potato_fry_timer) {
+            flip_bar_tx += 0.05f;
+            if (flip_bar_tx >= 0.8f) {
+                potato_fry_timer = !potato_fry_timer;
+                potato_cooked_finish = true;
+            }
+        }
     }
     break;
     }
