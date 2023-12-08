@@ -393,11 +393,11 @@ GLvoid drawScene() {
         LoadOBJ_single("food/MUFF_T_CR.obj", bread[0].mesh);
         bread[0].mesh[0].textureFile = "food/MUFF_T_CR_01.png";
         bread[0].size = 0.5; bread[1].size = 0.5;
-        bread[0].move += glm::vec3(0.0,+1.0,0); 
-        bread[1].move+= glm::vec3(0.0, +1.0, 0);
+        bread[0].move += glm::vec3(0.0,0,0); 
+        bread[1].move+= glm::vec3(0.0, 0, 0);
         LoadOBJ_single("food/MUFF_T_HE.obj", bread[1].mesh);
         bread[1].mesh[0].textureFile = "food/MUFF_T_HE_01.png";
-        fryfan.size = 1.0f, fryfan.rotate = 0.0f;
+        fryfan.size = 1.0f, fryfan.rotate_x =0.0f;
         LoadOBJ_single("tool/pan.obj",fryfan.mesh);
         fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
@@ -523,7 +523,7 @@ GLvoid drawScene() {
     case 3:
     {  
      
-        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(3.6, 6.59, 3.7),glm::vec3(-2.47, -1.28, -2.0), cameraUp)));
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2),glm::vec3(0, 0, 0), cameraUp)));
 
         for (int i = 0; i < 2; i++) {
         for (Mesh m : bread[i].mesh) {
@@ -685,15 +685,15 @@ void keyboard(unsigned char key, int x, int y) {
     case 3:
         switch (key) {
         case 'z':
-            CameraPos.z -= 0.1f;
+           fryfan.rotate_z -= 10.0f;
             break;
         case 'Z':
-            CameraPos.z += 0.1f;
+            fryfan.rotate_z +=  10.0f;
             break;
-        case 'x': CameraPos.x -= 0.1; break;
-        case 'X': CameraPos.x += 0.1; break;
-        case 'y': CameraPos.y -= 0.1; break;
-        case 'Y': CameraPos.y += 0.1; break;
+        case 'x': fryfan.rotate_x  -= 10.0f; break;
+        case 'X': fryfan.rotate_x += 10.0f; break;
+        case 'y': fryfan.rotate_y  -= 10.0f; break;
+        case 'Y': fryfan.rotate_y  += 10.0f; break;
         }
         break;
     }
@@ -781,15 +781,26 @@ void Mouse(int button, int state, int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
     my = -(((double)y - WINDOWY / 2.0) / (WINDOWY / 2.0));
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        printf("POS : (%f, %f, %f )\n", CameraPos.x, CameraPos.y, CameraPos.z);
-        left_down = 1;
-        sx = mx;
-        sy = my;
+    if (SCENE != 3)
+    {
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            printf("POS : (%f, %f, %f )\n", CameraPos.x, CameraPos.y, CameraPos.z);
+            left_down = 1;
+            sx = mx;
+            sy = my;
+        }
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+            printf("AT : (%f, %f, %f )\n", CameraAt.x, CameraAt.y, CameraAt.z);
+            left_down = 0;
+        }
     }
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-        printf("AT : (%f, %f, %f )\n", CameraAt.x, CameraAt.y, CameraAt.z);
-        left_down = 0;
+    else {
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+            printf("fryfan_rotate : (%f, %f, %f )\n",fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
+        }
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+
+        }
     }
 
 }
