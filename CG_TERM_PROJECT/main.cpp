@@ -245,6 +245,8 @@ Plane bread[2];
 Plane fryfan;
 Plane CuttingBoard;
 Plane Potato;
+Plane PotatoChips;
+Plane FlyerBasket;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -406,6 +408,11 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
         LoadOBJ("Potato/potato.obj", Potato.mesh);
         Potato.mesh[0].textureFile = "Potato/potato.png";
+        LoadOBJ("PotatoChips/Chips.obj", PotatoChips.mesh);
+        PotatoChips.mesh[0].textureFile = "PotatoChips/Chips.png";
+        cout << "¤µ¤²";
+        LoadOBJ("Fryer Basket/FrierBasket.obj", FlyerBasket.mesh);
+        LoadMTL("Fryer Basket", "Fryer Basket/FrierBasket.mtl", FlyerBasket.mesh, FlyerBasket.texture_cnt);
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -570,6 +577,33 @@ GLvoid drawScene() {
         }
     }
         break;
+    case 7:
+    {
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+
+        for (int i = 0; i < PotatoChips.mesh.size(); ++i) {
+            PotatoChips.mesh[0].Texturing();
+            PotatoChips.mesh[i].Bind();
+            PotatoChips.mesh[i].Draw();
+        }
+
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+
+        for (int i = 0; i < FlyerBasket.mesh.size(); ++i) {
+            FlyerBasket.mesh[i].Texturing();
+            FlyerBasket.mesh[i].Bind();
+            FlyerBasket.mesh[i].Draw();
+        }
+    }
+    break;
     }
 
     // UI
@@ -799,6 +833,12 @@ void TimerFunction(int value)
     }
     break;
     case 6:
+    {
+        CameraPos = { 0.0f, 2.0f, 2.0f };
+        CameraAt = { 0.0f, 0.0f, 0.0f };
+    }
+    break;
+    case 7:
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
