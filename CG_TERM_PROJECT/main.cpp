@@ -342,7 +342,7 @@ glm::vec3 CameraPos = { 5.0f, 5.0f, 5.0f };
 glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f };
 float rotate_y = 0.0f;
 
-float light_x = 0.0f, light_y = 5.0f, light_z = 5.0f;
+float light_x = 5.0f, light_y = 5.0f, light_z = 5.0f;
 float light_angle = 0.0;
 
 // 시작화면
@@ -390,9 +390,10 @@ bool flip_bar_dir = true;
 float flip_bar_tx = -0.8f, oil_scale_y = 0.0f;
 int potato_gauge = 0;
 float potato_chips_trans[7][2] = {
-    {0.5f, 0.1f}, {0.3f, -0.1f}, {0.2f, 0.0f}, {0.1f, -0.1f},
-    {0.0f, 0.1f}, {-0.3f, -0.1f}, {-0.5f, 0.1f}
+    {0.5f, 0.1f}, {0.3f, -0.1f}, {0.2f, 0.0f}, {0.0f, -0.1f},
+    {-0.2f, 0.1f}, {-0.3f, -0.1f}, {-0.5f, 0.1f}
 };
+bool potato_show = true;
 float potato_scale_x = 0.05f, potato_tx = 0.0f;
 
 
@@ -578,18 +579,20 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].Bind();
         CuttingBoard.mesh[0].Draw();
 
-        TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(potato_tx, 0.2f, 0.0f));
-        TR = glm::scale(TR, glm::vec3(potato_scale_x, 0.05f, 0.05f));
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
-
-        Potato.mesh[0].Texturing();
-        Potato.mesh[0].Bind();
-        Potato.mesh[0].FanDraw();
-
-        for (int i = 0; i < potato_gauge; ++i) {
+        if (potato_show) {
             TR = glm::mat4(1.0f);
-            TR = glm::translate(TR, glm::vec3(potato_chips_trans[i][0], 0.0f, potato_chips_trans[i][1]));
+            TR = glm::translate(TR, glm::vec3(potato_tx, 0.2f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(potato_scale_x, 0.05f, 0.05f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+
+            Potato.mesh[0].Texturing();
+            Potato.mesh[0].Bind();
+            Potato.mesh[0].FanDraw();
+        }
+
+        for (int i = 0; i < (potato_gauge / 3); ++i) {
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(potato_chips_trans[i][0], 0.1f, potato_chips_trans[i][1]));
             TR = glm::rotate(TR, (float)glm::radians(30.0f * i), glm::vec3(0.0f, 1.0f, 0.0f));
             TR = glm::scale(TR, glm::vec3(0.5f, 0.5f, 0.5f));
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
@@ -890,10 +893,10 @@ void keyboard(unsigned char key, int x, int y) {
             if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
                 if (potato_gauge <= 21) {
                     potato_gauge += 3;
-                    potato_scale_x -= 0.007; potato_tx -= 0.007f;
+                    potato_scale_x -= 0.007; potato_tx -= 0.1f;
                     if (potato_gauge >= 21) {
                         potato_gauge = 20;
-                        potato_scale_x = 0.0f;
+                        potato_show = false;
                     }
                 }
             }
