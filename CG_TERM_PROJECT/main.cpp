@@ -1149,9 +1149,14 @@ void TimerFunction(int value)
         for (int i = 0; i < 40; i++) cheeses[i].down();
         if (time_angle < 360.0f && cheese_slice >= 40) time_angle = 360.0f, game_result[4] = 1;
         if (time_angle >= 360.0 && game_result[4] == 0) { if (cheese_slice < 40) game_result[4] = 2; }
-        if (time_angle > 540.0f) SCENE = 5, time_angle = 0;
+        if (time_angle >480.0f) SCENE = 5, time_angle = 0;
     }
           break;
+    case 5: 
+    {
+    
+    }
+    break;
     case 6:
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
