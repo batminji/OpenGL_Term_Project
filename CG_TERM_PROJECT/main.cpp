@@ -342,7 +342,6 @@ glm::vec3 CameraPos = { 5.0f, 5.0f, 5.0f };
 glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f };
 float rotate_y = 0.0f;
 
-float light_x = 5.0f, light_y = 5.0f, light_z = 5.0f;
 float light_angle = 0.0;
 
 // 시작화면
@@ -396,7 +395,6 @@ float potato_chips_trans[7][2] = {
 };
 bool potato_show = true, potato_cut_success = false;
 float potato_scale_x = 0.05f, potato_tx = 0.0f;
-
 
 GLvoid drawScene() {
     if (start) {
@@ -471,7 +469,7 @@ GLvoid drawScene() {
     glm::vec3 cameraDirection;
     glm::vec3 cameraUp;
 
-    glUniform3f(lightPosLocation, light_x, light_y, light_z);
+    glUniform3f(lightPosLocation, 5.0f, 5.0f, 5.0f);
     glUniform4f(lightColorLocation, 1.0, 1.0, 1.0, 1.0f);
     glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -651,6 +649,7 @@ GLvoid drawScene() {
 
     // UI
     //////////////////////////////////////////////////////////////////////////////////////////////
+    glUniform3f(lightPosLocation, 0.0f, 0.0f, 10.0f);
     Vw = glm::mat4(1.0f);
     glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &Vw[0][0]);
     Pj = glm::mat4(1.0f);
@@ -793,6 +792,16 @@ GLvoid drawScene() {
     break;
     case 6:
     { 
+        if (potato_cut_success) {
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 0.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            game_ui.textureFile = "resource/good.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
         {
             game_ui.textureFile = "resource/rotate_bar.png";
             game_ui.Texturing();
@@ -813,18 +822,28 @@ GLvoid drawScene() {
         }
         { //기본 바 
             TR = glm::mat4(1.0f);
-            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
-            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 0.0f));
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
             game_ui.textureFile = "resource/potato_ui.png";
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
         }
+        
     }
         break;
     case 7:
-    {        
+    {   
+        if (potato_cooked_finish) {
+            TR = glm::mat4(1.0f);
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            if (flip_bar_tx >= -0.1f && flip_bar_tx <= 0.1f)game_ui.textureFile = "resource/good.png";
+            else game_ui.textureFile = "resource/fail.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
         { // 움직이는 바
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
@@ -889,6 +908,10 @@ void keyboard(unsigned char key, int x, int y) {
     case 6:
         switch (key) {
         case GLUT_KEY_SPACE:
+            if (potato_cut_success) {
+                SCENE++;
+                flip_bar_tx = -0.8f; flip_bar_dir = true;
+            }
             if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
                 if (potato_gauge <= 21) {
                     potato_gauge += 3;
@@ -905,6 +928,9 @@ void keyboard(unsigned char key, int x, int y) {
     case 7:
         switch (key) {
         case GLUT_KEY_SPACE:
+            if (potato_cooked_finish) {
+                SCENE++;
+            }
             if (!oil_timer && oil_scale_y <= 0.0f) oil_timer = !oil_timer;
             if (potato_fry_timer) {
                 potato_fry_timer = !potato_fry_timer;
