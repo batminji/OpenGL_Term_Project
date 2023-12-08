@@ -242,7 +242,7 @@ public:
         return TR;
     }
 };
-
+Plane Cube;
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
@@ -392,6 +392,8 @@ float flip_bar_tx = -0.8f;
 GLvoid drawScene() {
     if (start) {
         start = false;
+        LoadOBJ("cube.obj", Cube.mesh);
+        Cube.mesh[0].textureFile = "white.png";
         LoadOBJ("spongebob/spongebob.obj", SpongeBob.mesh);
         LoadMTL("spongebob", "spongebob/spongebob.mtl", SpongeBob.mesh, SpongeBob.texture_cnt);
         SpongeBob.mesh[1].textureFile = "spongebob/z3spon3.png";
@@ -461,7 +463,7 @@ GLvoid drawScene() {
 
     glUniform3f(lightPosLocation, light_x, light_y, light_z);
     glUniform4f(lightColorLocation, 1.0, 1.0, 1.0, 1.0f);
-    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 0.5f);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
 
     // 그리기 코드    
 
@@ -587,7 +589,7 @@ GLvoid drawScene() {
     case 7:
     {
         TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+        TR = glm::translate(TR, glm::vec3(0.0f, -0.8f, -1.0f));
         TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
@@ -612,6 +614,21 @@ GLvoid drawScene() {
             FryerBasket.mesh[i].Bind();
             FryerBasket.mesh[i].Draw();
         }
+
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, -1.0f, -1.0f));
+        TR = glm::scale(TR, glm::vec3(0.8f, 0.3f, 0.5f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+        glUniform4f(objColorLocation, 1.0f, 1.0f, 0.0f, 0.5f);
+        for (int i = 0; i < Cube.mesh.size(); ++i) {
+            Cube.mesh[0].Texturing();
+            Cube.mesh[i].Bind();
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            Cube.mesh[i].Draw();
+            glDisable(GL_BLEND);
+        }
+        glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
     }
     break;
     }
