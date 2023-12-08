@@ -247,7 +247,7 @@ public:
         move.x = piece * size;
     }
     glm::mat4 my_tr() {
-        glm::mat4 TR = glm::translate(glm::mat4(1.0f), glm::vec3(-0.2f*slice, 1.0f, 0.0f)) * glm::translate(glm::mat4(1.0f), move) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f)) * glm::rotate(glm::mat4(1.0f), (float)glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f))*glm::scale(glm::mat4(1.0f), glm::vec3(size, 0.7, 0.7)) * glm::mat4(1.0f);
+        glm::mat4 TR = glm::translate(glm::mat4(1.0f), glm::vec3(-0.2f*slice, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), move) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f)) * glm::rotate(glm::mat4(1.0f), (float)glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f))*glm::scale(glm::mat4(1.0f), glm::vec3(size, 0.7, 0.7)) * glm::mat4(1.0f);
         return TR;
     }
     void down() {
@@ -594,7 +594,7 @@ GLvoid drawScene() {
     break;
     case 4:
 
-    {  glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
+    {  glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(-2,4, 5), glm::vec3(0, 0, 0), cameraUp)));
        Cube.mesh[0].textureFile = "food/cheese.png";
        for (int j = 0; j < 40; j++) {
            for (int i = 0; i < Cube.mesh.size(); ++i) {
@@ -608,7 +608,7 @@ GLvoid drawScene() {
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, -2.0f, 0.0f));
         TR = glm::rotate(TR, (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        TR = glm::scale(TR, glm::vec3(300.0f,300.0f, 300.0f));
+        TR = glm::scale(TR, glm::vec3(400.0f,300.0f, 300.0f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
         CuttingBoard.mesh[0].Texturing();
         CuttingBoard.mesh[0].Bind();
@@ -839,6 +839,16 @@ GLvoid drawScene() {
     }
     break;
     case 4:{
+        { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/slice_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
         { //시계
             game_ui.textureFile = "resource/clock.png";
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.0f))));
