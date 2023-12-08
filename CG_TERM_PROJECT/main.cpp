@@ -214,11 +214,7 @@ public:
         glDrawArrays(GL_TRIANGLE_FAN, 0, vertex.size());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-    void StripDraw() {
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertex.size());
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
+
 };
 
 class Plane {
@@ -384,13 +380,16 @@ float breath_ty = 0.5f;
 
 //게임화면
 UIMesh game_ui;
+UIMesh flip_bar;
 bool potato_cooked_finish = false;
+bool oil_timer = false;
 bool potato_fry_timer = false;
-float flip_bar_tx = -0.8f;
 float score[4][2] = { 0 };
 float bar_move = 0.0f;
 int bar_dir = 1;
 int jcnt = 0;
+bool flip_bar_dir = true;
+float flip_bar_tx = -0.8f, oil_scale_y = 0.0f;
 
 
 
@@ -416,7 +415,7 @@ GLvoid drawScene() {
         fryfan.size = 1.0f;
         fryfan.rotate_x = -100.0f;
         fryfan.move = glm::vec3(0.000000, 1.500000, 4.899998);
-        LoadOBJ_single("tool/pan.obj",fryfan.mesh);
+        LoadOBJ_single("tool/pan.obj", fryfan.mesh);
         fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
@@ -429,6 +428,7 @@ GLvoid drawScene() {
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
+            flip_bar.textureFile = "resource/flip_bar.png";
         }
 
         // 사운드
@@ -544,24 +544,24 @@ GLvoid drawScene() {
     }
     break;
     case 3:
-    {  
-     
-        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2),glm::vec3(0, 0, 0), cameraUp)));
+    {
+
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
 
         for (int i = 0; i < 2; i++) {
-        for (Mesh m : bread[i].mesh) {
-            bread[i].mesh[0].Texturing();
-            m.Bind();
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
-            m.Draw();
+            for (Mesh m : bread[i].mesh) {
+                bread[i].mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
+                m.Draw();
+            }
+            for (int j = 0; j < fryfan.mesh.size(); j++) {
+                fryfan.mesh[0].Texturing();
+                fryfan.mesh[j].Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(fryfan.my_TR()));
+                fryfan.mesh[j].Draw();
+            }
         }
-        for (int j = 0; j <fryfan.mesh.size();j++) {
-            fryfan.mesh[0].Texturing();
-            fryfan.mesh[j].Bind();
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(fryfan.my_TR()));
-            fryfan.mesh[j].Draw();
-        }
-    }
     }
     break;
     case 6:
@@ -571,12 +571,10 @@ GLvoid drawScene() {
         TR = glm::rotate(TR, (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         TR = glm::scale(TR, glm::vec3(150.0f, 150.0f, 150.0f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+        CuttingBoard.mesh[0].Texturing();
+        CuttingBoard.mesh[0].Bind();
+        CuttingBoard.mesh[0].Draw();
 
-        for (int i = 0; i < CuttingBoard.mesh.size(); ++i) {
-            CuttingBoard.mesh[0].Texturing();
-            CuttingBoard.mesh[i].Bind();
-            CuttingBoard.mesh[i].Draw();
-        }
 
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, 0.2f, 0.0f));
@@ -584,19 +582,16 @@ GLvoid drawScene() {
         TR = glm::scale(TR, glm::vec3(0.05f, 0.05f, 0.05f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
-        for (int i = 0; i < Potato.mesh.size(); ++i) {
-            Potato.mesh[0].Texturing();
-            Potato.mesh[i].Bind();
-            Potato.mesh[i].FanDraw();
-        }
+        Potato.mesh[0].Texturing();
+        Potato.mesh[0].Bind();
+        Potato.mesh[0].FanDraw();
     }
-        break;
+    break;
     case 7:
     {
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, -0.8f, -1.0f));
-        TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
+        TR = glm::scale(TR, glm::vec3(1.5f, 1.5f, 1.5f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
         for (int i = 0; i < PotatoChips.mesh.size(); ++i) {
@@ -622,7 +617,7 @@ GLvoid drawScene() {
 
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, -1.0f, -1.0f));
-        TR = glm::scale(TR, glm::vec3(0.8f, 0.3f, 0.5f));
+        TR = glm::scale(TR, glm::vec3(0.8f, oil_scale_y, 0.5f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
         glUniform4f(objColorLocation, 1.0f, 1.0f, 0.0f, 0.5f);
         for (int i = 0; i < Cube.mesh.size(); ++i) {
@@ -709,38 +704,38 @@ GLvoid drawScene() {
     case 3:
     {
         { //배경
-        TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
-        TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
-        story_background.textureFile = "resource/story_bg_0.png";
-        story_background.Texturing();
-        story_background.Bind();
-        story_background.Draw(); 
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/story_bg_0.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
         }
 
         { //기본 바 
             game_ui.textureFile = "resource/fry_ui.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
         }
         { //볶기 바 
             game_ui.textureFile = "resource/rotate_bar.png";
-         
+
             game_ui.Texturing();
             game_ui.Bind();
-            for (int c = 0; c < (int)score[3][0]/10.0 &&c <20; c++) {
-                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f))* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f+c*0.011, 0.0f, 3.0f))));
+            for (int c = 0; c < (int)score[3][0] / 10.0 && c < 20; c++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 3.0f))));
                 game_ui.Draw();
             }
-         
-           
+
+
         }
         { //뒤집기 바 
             game_ui.textureFile = "resource/fry_bar.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
             game_ui.Texturing();
             game_ui.Bind();
             for (int c = 0; c < (int)score[3][1] && c < 20; c++) {
@@ -756,22 +751,40 @@ GLvoid drawScene() {
             game_ui.Draw();
         }
     }
+    break;
+    case 6:
+    {
+        { // 움직이는 바
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            flip_bar.Texturing();
+            flip_bar.Bind();
+            flip_bar.Draw();
+        }
+        { //기본 바 
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            game_ui.textureFile = "resource/potato_ui.png";
+            game_ui.Texturing();
+            game_ui.Bind();
             game_ui.Draw();
         }
     }
     break;
     case 7:
     {
-        
         { // 움직이는 바
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
             TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
-            game_ui.textureFile = "resource/flip_bar.png";
-            game_ui.Texturing();
-            game_ui.Bind();
-            game_ui.Draw();
+            flip_bar.Texturing();
+            flip_bar.Bind();
+            flip_bar.Draw();
         }
         { //기본 바 
             TR = glm::mat4(1.0f);
@@ -783,9 +796,9 @@ GLvoid drawScene() {
             game_ui.Bind();
             game_ui.Draw();
         }
-        
+
     }
-        break;
+    break;
     }
 
     glutSwapBuffers();
@@ -821,31 +834,31 @@ void keyboard(unsigned char key, int x, int y) {
     case 3:
         switch (key) {
         case 'z':
-           fryfan.rotate_z -= 10.0f;
+            fryfan.rotate_z -= 10.0f;
             break;
         case 'Z':
-            fryfan.rotate_z +=  10.0f;
+            fryfan.rotate_z += 10.0f;
             break;
-        case 'x': fryfan.rotate_x  -= 10.0f; break;
+        case 'x': fryfan.rotate_x -= 10.0f; break;
         case 'X': fryfan.rotate_x += 10.0f; break;
-        case 'y': fryfan.rotate_y  -= 10.0f; break;
-        case 'Y': fryfan.rotate_y  += 10.0f; break;
+        case 'y': fryfan.rotate_y -= 10.0f; break;
+        case 'Y': fryfan.rotate_y += 10.0f; break;
         case GLUT_KEY_SPACE:
-        {   if (bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt ==0)jcnt =1, score[3][1] += 4.0f;
-            break; }
+        {   if (bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0)jcnt = 1, score[3][1] += 4.0f;
+        break; }
         }
         break;
     case 7:
         switch (key) {
         case GLUT_KEY_SPACE:
-            if (!potato_fry_timer && flip_bar_tx <= -0.8f)potato_fry_timer = !potato_fry_timer;
-            else if (potato_fry_timer) {
+            if (!oil_timer && oil_scale_y <= 0.0f) oil_timer = !oil_timer;
+            if (potato_fry_timer) {
                 potato_fry_timer = !potato_fry_timer;
                 potato_cooked_finish = true;
             }
             break;
         }
-    break;
+        break;
     }
     glutPostRedisplay();
 }
@@ -858,13 +871,13 @@ void SpecialKeyboard(int key, int x, int y)
         break;
     case GLUT_KEY_LEFT:
         if (SCENE == 3) bread[0].move.z -= 0.1;
-        break; 
+        break;
     case GLUT_KEY_UP:
         if (SCENE == 3) bread[0].move.y += 0.1;
-            break; 
+        break;
     case GLUT_KEY_DOWN:
         if (SCENE == 3) bread[0].move.y -= 0.1;
-                break;
+        break;
     }
     glutPostRedisplay();
 }
@@ -918,16 +931,11 @@ void TimerFunction(int value)
         }
     }
     break;
-    case 2:
-    {
-
-    }
-    break;
     case 3: {
         bar_move += (bar_dir) * 0.1;
-        if (bar_move > 0.45) bar_dir = -1, bar_move =0.45;
+        if (bar_move > 0.45) bar_dir = -1, bar_move = 0.45;
         if (bar_move < -0.45)bar_dir = 1, bar_move = -0.45;
-        if (jcnt > 0&& jcnt< 10) {
+        if (jcnt > 0 && jcnt < 10) {
             fryfan.rotate_x += 2.0f;
             for (int c = 0; c < 2; c++) bread[c].move.y += 0.4, bread[c].rotate_z += 10.0f;
             jcnt++;
@@ -936,7 +944,7 @@ void TimerFunction(int value)
             fryfan.rotate_x -= 2.0f;
             for (int c = 0; c < 2; c++) bread[c].move.y -= 0.4, bread[c].rotate_z += 10.0f;
             jcnt++;
-            if (jcnt == 19)printf("%f",bread[0].rotate_z), jcnt = 0 ,bread[0].move.y =0, bread[1].move.y= 0,fryfan.rotate_x =-100.0f;
+            if (jcnt == 19)printf("%f", bread[0].rotate_z), jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
         }
     }
           break;
@@ -944,12 +952,27 @@ void TimerFunction(int value)
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
+        if (flip_bar_dir) {
+            flip_bar_tx += 0.1f;
+            if (flip_bar_tx >= 0.8f)flip_bar_dir = !flip_bar_dir;
+        }
+        else {
+            flip_bar_tx -= 0.1f;
+            if (flip_bar_tx <= -0.8f)flip_bar_dir = !flip_bar_dir;
+        }
     }
     break;
     case 7:
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
+        if (oil_timer) {
+            oil_scale_y += 0.01f;
+            if (oil_scale_y >= 0.5f) {
+                oil_timer = !oil_timer;
+                potato_fry_timer = true;
+            }
+        }
         if (potato_fry_timer) {
             flip_bar_tx += 0.05f;
             if (flip_bar_tx >= 0.8f) {
@@ -989,14 +1012,14 @@ void Mouse(int button, int state, int x, int y)
     }
     else {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-            printf("fryfan_rotate : (%f, %f, %f )\n",fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
+            printf("fryfan_rotate : (%f, %f, %f )\n", fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
             printf("score =%f\n", score[3][0]);
-            printf("bread_angle =%f\n",bread_angle);
+            printf("bread_angle =%f\n", bread_angle);
         }
         if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 
         }
-        
+
     }
 
 }
@@ -1015,12 +1038,12 @@ void Motion(int x, int y)
     }
     else {
         if (jcnt == 0) {
-        fryfan.rotate_x = -100.0f + fabs(atan2(mx, my));
-        fryfan.rotate_z = fabs(atan2(mx, my));
-        score[3][0] += fabs(bread_angle - atan2(mx, my));
-        bread_angle = atan2(mx, my);
-        bread[0].move = glm::vec3(1.3 * cos(bread_angle), 0, 1.3 * sin(bread_angle) - 1.3);
-        bread[1].move = glm::vec3(1.3 * cos(bread_angle + glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f)) - 1.3);
+            fryfan.rotate_x = -100.0f + fabs(atan2(mx, my));
+            fryfan.rotate_z = fabs(atan2(mx, my));
+            score[3][0] += fabs(bread_angle - atan2(mx, my));
+            bread_angle = atan2(mx, my);
+            bread[0].move = glm::vec3(1.3 * cos(bread_angle), 0, 1.3 * sin(bread_angle) - 1.3);
+            bread[1].move = glm::vec3(1.3 * cos(bread_angle + glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f)) - 1.3);
         }
     }
 
