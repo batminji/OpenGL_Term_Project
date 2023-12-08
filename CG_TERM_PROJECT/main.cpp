@@ -304,6 +304,55 @@ void LoadOBJ(const char* filename, vector<Mesh>& out_mesh);
 void LoadOBJ_single(const char* filename, vector<Mesh>& out_mesh);
 void LoadMTL(const char* FileName, const char* mtlFileName, vector<Mesh>& out_mesh, int& tex_cnt);
 
+//물체피킹용
+struct Ray {
+    glm::vec3 origin;    // 광선의 시작점
+    glm::vec3 direction; // 광선의 방향
+};
+struct AABB {
+    glm::vec3 min; // 최소 꼭짓점
+    glm::vec3 max; // 최대 꼭짓점
+};
+AABB createBoundingBox(const std::vector<glm::vec3>& vertices, const glm::mat4& modelMatrix) {
+    // 초기화
+    glm::vec3 min(std::numeric_limits<float>::max());
+    glm::vec3 max(std::numeric_limits<float>::lowest());
+
+    // 꼭짓점들을 모델 변환 행렬을 사용하여 월드 좌표계로 변환하면서 바운딩 볼륨을 구함
+    for (const glm::vec3& vertex : vertices) {
+        glm::vec4 worldPosition = modelMatrix * glm::vec4(vertex, 1.0f);
+        min = glm::min(min, glm::vec3(worldPosition));
+        max = glm::max(max, glm::vec3(worldPosition));
+    }
+    // 바운딩 볼륨 생성
+    AABB boundingBox;
+    boundingBox.min = min;
+    boundingBox.max = max;
+
+    return boundingBox;
+}
+bool checkRayAABBCollision(const Ray& ray, const AABB& aabb) {
+    // 먼저 AABB의 바운딩 볼륨과의 충돌 검사
+    if (!checkAABBCollision(aabb, aabb)) {
+        return false; // 충돌하지 않음
+    }
+
+    // 광선과 AABB의 바운딩 볼륨 간의 충돌이 확인되면 정확한 광선-바운딩 볼륨 충돌을 검사
+    glm::vec3 invDirection = 1.0f / ray.direction; // 광선의 반대 방향
+
+    glm::vec3 tMin = (aabb.min - ray.origin) * invDirection;
+    glm::vec3 tMax = (aabb.max - ray.origin) * invDirection;
+
+    glm::vec3 tEntry = glm::min(tMin, tMax);
+    glm::vec3 tExit = glm::max(tMin, tMax);
+
+    float tEntryMax = std::max(std::max(tEntry.x, tEntry.y), tEntry.z);
+    float tExitMin = std::min(std::min(tExit.x, tExit.y), tExit.z);
+
+    // 충돌 여부 확인
+    return tEntryMax <= tExitMin;
+}
+
 void make_vertexShaders()
 {
 
