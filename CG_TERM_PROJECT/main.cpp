@@ -726,7 +726,7 @@ GLvoid drawScene() {
             TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
             TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
-            story_background.textureFile = "resource/story_bg_0.png";
+            story_background.textureFile = "resource/fry_station_bg.png";
             story_background.Texturing();
             story_background.Bind();
             story_background.Draw();
