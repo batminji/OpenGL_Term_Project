@@ -294,6 +294,9 @@ Plane FryerBasket;
 Plane knife;
 Plane Coke;
 Plane meat;
+Plane bowl;
+Plane tomato;
+Plane cabbage;
 glm::mat4 TR = glm::mat4(1.0f);
 
 void keyboard(unsigned char, int, int);
@@ -498,6 +501,7 @@ bool pour_coke = false, pour_done = false;
 float coke_scale_y = 0.0f;
 bool meat_click = 0;
 
+
 GLvoid drawScene() {
     if (start) {
         start = false;
@@ -544,7 +548,18 @@ GLvoid drawScene() {
         LoadOBJ_single("food/MEAT.obj", meat.mesh);
         meat.mesh[0].textureFile = "food/MEAT_01.png";
         meat.size = 0.6; meat.move.z -= 0.3;
-        
+        LoadOBJ_single("food/cabbage.obj",cabbage.mesh);
+        cabbage.mesh[0].textureFile = "food/cabbage.jpg";
+        LoadOBJ_single("food/Tomato.obj", tomato.mesh);
+        tomato.mesh[0].textureFile = "food/Tomato.png";
+        LoadOBJ_single("tool/bowl.obj", bowl.mesh);
+        bowl.mesh[0].textureFile = "tool/bowl_colors.png";
+        tomato.size = 50.0f;
+        bowl.size = 1.8f;
+        bowl.move.y = -1.0;
+        tomato.move.y = 4.0f;
+        cabbage.move += glm::vec3(1.0 * cos(0), 0, 1.0 * sin(0) - 1.0);
+        tomato.move += glm::vec3(1.0 * cos(glm::radians(90.0f)), 0, 1.0 * sin(glm::radians(90.0f)) - 1.0);
         // 사운드
         result = System_Create(&ssystem);
         if (result != FMOD_OK)
@@ -729,6 +744,28 @@ GLvoid drawScene() {
             }
     }
     break;
+    case 6: {
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
+        for (Mesh m : tomato.mesh) {
+           tomato.mesh[0].Texturing();
+            m.Bind();
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(tomato.my_TR()));
+            m.Draw();
+        }
+        for (Mesh m : cabbage.mesh) {
+            cabbage.mesh[0].Texturing();
+            m.Bind();
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(cabbage.my_TR()));
+            m.Draw();
+        }
+        for (Mesh m : bowl.mesh) {
+            bowl.mesh[0].Texturing();
+            m.Bind();
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bowl.my_TR()));
+            m.Draw();
+        }
+    }
+          break;
     case 7:
     {
         // glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(-0.8, 2.5, 2), glm::vec3(0, 0, 0), cameraUp)));
@@ -1098,8 +1135,6 @@ GLvoid drawScene() {
                 glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 3.0f))));
                 game_ui.Draw();
             }
-
-
         }
         { //뒤집기 바 
             game_ui.textureFile = "resource/fry_bar.png";
@@ -1121,6 +1156,56 @@ GLvoid drawScene() {
         { //결과출력
             if (game_result[5] != 0) {
                 (game_result[5] == 1) ? game_ui.textureFile = "resource/good.png" : game_ui.textureFile = "resource/fail.png";
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(time_angle / 300.0, time_angle / 300.0, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0f, 2.3f))));
+                game_ui.Texturing();
+                game_ui.Bind();
+                game_ui.Draw();
+            }
+        }
+    }
+          break;
+    case 6:{
+        { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/potato_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
+        { //시계
+            game_ui.textureFile = "resource/clock.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+            game_ui.textureFile = "resource/clock_pointer.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.2f)) * glm::translate(glm::mat4(1.0f), glm::vec3(+0.01875f, -0.01875f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(max(-360.0f, -time_angle)), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(-0.01875f, +0.01875f, 0.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //기본 바 
+            game_ui.textureFile = "resource/wash_ui.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //누르기 바 
+            game_ui.textureFile = "resource/rotate_bar.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            for (int c = 0; c < (int)score[6][0] / 10.0 && c < 20; c++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 3.0f))));
+                game_ui.Draw();
+            }
+        }
+        { //결과출력
+            if (game_result[6] != 0) {
+                (game_result[6] == 1) ? game_ui.textureFile = "resource/good.png" : game_ui.textureFile = "resource/fail.png";
                 glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(time_angle / 300.0, time_angle / 300.0, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0f, 2.3f))));
                 game_ui.Texturing();
                 game_ui.Bind();
@@ -1539,6 +1624,15 @@ void TimerFunction(int value)
         if (time_angle > 440.0f) SCENE = 6, time_angle = 0;
     }
           break;
+    case 6:{
+        time_angle += 1.5f;
+        if (time_angle < 360.0f) {
+            if ((int)score[6][0] / 10.0 >= 20) game_result[6] = 1, time_angle = 360.0f;
+        }
+        if (time_angle >= 360.0 && game_result[6] == 0) { if ((int)score[6][0] / 10.0 < 10) game_result[6] = 2; }
+        if (time_angle > 440.0f) SCENE = 7, time_angle = 0;
+    }
+          break;
     case 7:
     {
         CameraPos = { 0.0f, 3.0f, 1.5f };
@@ -1615,7 +1709,7 @@ void Mouse(int button, int state, int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
     my = -(((double)y - WINDOWY / 2.0) / (WINDOWY / 2.0));
-    if (SCENE != 5)
+    if (SCENE != 5 && SCENE !=6)
     {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             printf("POS : (%f, %f, %f )\n", CameraPos.x, CameraPos.y, CameraPos.z);
@@ -1628,7 +1722,8 @@ void Mouse(int button, int state, int x, int y)
             left_down = 0;
         }
     }
-    else {
+    else if (SCENE == 6) { bread_angle = atan2(mx, my); }
+    else if (SCENE == 5) {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && jcnt == 0) {
 
             glm::vec4 viewport = glm::vec4(0.0f, 0.0f,WINDOWX,WINDOWY); // 화면의 크기
@@ -1666,7 +1761,7 @@ void Motion(int x, int y)
 {
     mx = ((double)x - WINDOWX / 2.0) / (WINDOWX / 2.0);
     my = -(((double)y - WINDOWY / 2.0) / (WINDOWY / 2.0));
-    if (SCENE != 3) {
+    if (SCENE != 3 && SCENE !=6) {
         if (left_down) {
             ex = mx;
             ey = my;
@@ -1674,7 +1769,7 @@ void Motion(int x, int y)
             CameraAt.y += (ey - sy);
         }
     }
-    else {
+    else if (SCENE == 3) {
         if (jcnt == 0&&time_angle <360.0f) {
             fryfan.rotate_x = -100.0f + fabs(atan2(mx, my));
             fryfan.rotate_z = fabs(atan2(mx, my));
@@ -1684,7 +1779,18 @@ void Motion(int x, int y)
             bread[1].move = glm::vec3(1.3 * cos(bread_angle + glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f)) - 1.3);
         }
     }
-
+    else if (SCENE == 6) {
+        if (time_angle < 360.0f) {
+            bowl.rotate_x =  fabs(atan2(mx, my));
+            bowl.rotate_z = fabs(atan2(mx, my));
+            if (fabs(bread_angle - atan2(mx, my)>1.4))game_result[6] =2, time_angle =360.0f;
+            score[6][0] += 2*fabs(bread_angle - atan2(mx, my));
+            bread_angle = atan2(mx, my);
+           cabbage.move = glm::vec3(1.0 * cos(bread_angle), 0, 1.0 * sin(bread_angle)+ 0.5);
+           tomato.move = glm::vec3(1.0 * cos(bread_angle + glm::radians(90.0f)),3.0, 1.0 * sin(bread_angle + glm::radians(90.0f)) + 0.5);
+        
+        }
+    }
     glutPostRedisplay();
 }
 
