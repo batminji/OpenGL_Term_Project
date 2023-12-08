@@ -216,14 +216,18 @@ public:
     vector<Mesh>mesh;
     int texture_cnt;
 
-    float rotate = 0.0f;
+    float rotate_x = 0.0f;
+    float rotate_y = 0.0f;
+    float rotate_z = 0.0f;
     float size = 1.0f;
     glm::vec3 move = glm::vec3(0.0f);
 
     glm::mat4 my_TR() {
         glm::mat4 TR = glm::mat4(1.0f);
         TR = glm::translate(TR, move);
-        TR = glm::rotate(TR, (float)glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f));
+        TR = glm::rotate(TR, (float)glm::radians(rotate_x), glm::vec3(1.0f, 0.0f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(rotate_y), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(rotate_z), glm::vec3(0.0f, 0.0f, 1.0f));
         TR = glm::scale(TR, glm::vec3(size));
         return TR;
     }
@@ -387,9 +391,9 @@ GLvoid drawScene() {
         bread[1].move+= glm::vec3(0.0, +1.0, 0);
         LoadOBJ_single("food/MUFF_T_HE.obj", bread[1].mesh);
         bread[1].mesh[0].textureFile = "food/MUFF_T_HE_01.png";
-        fryfan.size = 0.1f; 
-        LoadOBJ("tool/FryingPan.obj",fryfan.mesh);
-        LoadMTL("tool", "tool/FryingPan.mtl",fryfan.mesh, fryfan.texture_cnt);
+        fryfan.size = 1.0f, fryfan.rotate = 0.0f;
+        LoadOBJ_single("tool/pan.obj",fryfan.mesh);
+        fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
         {
