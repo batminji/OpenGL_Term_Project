@@ -377,8 +377,12 @@ int timer_cnt = 0;
 int krabs_talk = 0;
 float breath_ty = 0.5f;
 
+//게임화면
 UIMesh game_ui;
-
+float score[4][2] = { 0 };
+float bar_move = 0.0f;
+int bar_dir = 1;
+int jcnt = 0;
 
 
 
@@ -395,8 +399,8 @@ GLvoid drawScene() {
         LoadOBJ_single("food/MUFF_T_CR.obj", bread[0].mesh);
         bread[0].mesh[0].textureFile = "food/MUFF_T_CR_01.png";
         bread[0].size = 0.5; bread[1].size = 0.5;
-        bread[0].move += glm::vec3(0.0,0,0); 
-        bread[1].move+= glm::vec3(0.0, 0, 0);
+        bread[0].move = glm::vec3(1.3 * cos(0), 0, 1.3 * sin(0) - 1.3);
+        bread[1].move = glm::vec3(1.3 * cos(glm::radians(90.0f)), 0, 1.3 * sin(glm::radians(90.0f)) - 1.3);
         LoadOBJ_single("food/MUFF_T_HE.obj", bread[1].mesh);
         bread[1].mesh[0].textureFile = "food/MUFF_T_HE_01.png";
         fryfan.size = 1.0f;
@@ -688,21 +692,36 @@ GLvoid drawScene() {
 
         { //기본 바 
             game_ui.textureFile = "resource/fry_ui.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
         }
         { //볶기 바 
             game_ui.textureFile = "resource/rotate_bar.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+         
             game_ui.Texturing();
             game_ui.Bind();
-            game_ui.Draw();
+            for (int c = 0; c < (int)score[3][0]/10.0 &&c <20; c++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f))* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f+c*0.011, 0.0f, 3.0f))));
+                game_ui.Draw();
+            }
+         
+           
         }
         { //뒤집기 바 
             game_ui.textureFile = "resource/fry_bar.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+            game_ui.Texturing();
+            game_ui.Bind();
+            for (int c = 0; c < (int)score[3][1] && c < 20; c++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 3.0f))));
+                game_ui.Draw();
+            }
+        }
+        {
+            game_ui.textureFile = "resource/flip_bar.png";
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(bar_move, 0.0f, 4.0f))));
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
@@ -753,6 +772,9 @@ void keyboard(unsigned char key, int x, int y) {
         case 'X': fryfan.rotate_x += 10.0f; break;
         case 'y': fryfan.rotate_y  -= 10.0f; break;
         case 'Y': fryfan.rotate_y  += 10.0f; break;
+        case GLUT_KEY_SPACE:
+        {   if (bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt ==0)jcnt =1, score[3][1] += 4.0f;
+            break; }
         }
         break;
     }
@@ -832,6 +854,23 @@ void TimerFunction(int value)
 
     }
     break;
+    case 3: {
+        bar_move += (bar_dir) * 0.1;
+        if (bar_move > 0.45) bar_dir = -1, bar_move =0.45;
+        if (bar_move < -0.45)bar_dir = 1, bar_move = -0.45;
+        if (jcnt > 0&& jcnt< 10) {
+            fryfan.rotate_x += 2.0f;
+            for (int c = 0; c < 2; c++) bread[c].move.y += 0.4, bread[c].rotate_z += 10.0f;
+            jcnt++;
+        }
+        if (jcnt >= 9) {
+            fryfan.rotate_x -= 2.0f;
+            for (int c = 0; c < 2; c++) bread[c].move.y -= 0.4, bread[c].rotate_z += 10.0f;
+            jcnt++;
+            if (jcnt == 19)printf("%f",bread[0].rotate_z), jcnt = 0 ,bread[0].move.y =0, bread[1].move.y= 0,fryfan.rotate_x =-100.0f;
+        }
+    }
+          break;
     case 6:
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
@@ -875,11 +914,13 @@ void Mouse(int button, int state, int x, int y)
     else {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
             printf("fryfan_rotate : (%f, %f, %f )\n",fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
-            printf("bread[0].move = glm::vec3(%f, %f, %f )\n", bread[0].move.x, bread[0].move.y, bread[0].move.z);
+            printf("score =%f\n", score[3][0]);
+            printf("bread_angle =%f\n",bread_angle);
         }
         if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 
         }
+        
     }
 
 }
@@ -897,9 +938,14 @@ void Motion(int x, int y)
         }
     }
     else {
+        if (jcnt == 0) {
+        fryfan.rotate_x = -100.0f + fabs(atan2(mx, my));
+        fryfan.rotate_z = fabs(atan2(mx, my));
+        score[3][0] += fabs(bread_angle - atan2(mx, my));
         bread_angle = atan2(mx, my);
-        bread[0].move = glm::vec3(1.3*cos(bread_angle) , 0 , 1.3*sin(bread_angle)-1.3);
-        bread[1].move = glm::vec3(1.3 * cos(bread_angle+glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f))-1.3);
+        bread[0].move = glm::vec3(1.3 * cos(bread_angle), 0, 1.3 * sin(bread_angle) - 1.3);
+        bread[1].move = glm::vec3(1.3 * cos(bread_angle + glm::radians(90.0f)), 0, 1.3 * sin(bread_angle + glm::radians(90.0f)) - 1.3);
+        }
     }
 
     glutPostRedisplay();
