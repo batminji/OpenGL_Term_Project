@@ -785,6 +785,12 @@ void TimerFunction(int value)
         CameraAt = { 0.0f, 0.0f, 0.0f };
     }
     break;
+    case 7:
+    {
+        CameraPos = { 0.0f, 2.0f, 2.0f };
+        CameraAt = { 0.0f, 0.0f, 0.0f };
+    }
+    break;
     }
 
     glutPostRedisplay();
