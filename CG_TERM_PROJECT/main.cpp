@@ -214,6 +214,11 @@ public:
         glDrawArrays(GL_TRIANGLE_FAN, 0, vertex.size());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+    void StripDraw() {
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertex.size());
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 };
 
 class Plane {
@@ -237,7 +242,7 @@ public:
         return TR;
     }
 };
-
+Plane Cube;
 Plane SpongeBob;
 Plane Krabs;
 Plane BikiniMap;
@@ -246,7 +251,7 @@ Plane fryfan;
 Plane CuttingBoard;
 Plane Potato;
 Plane PotatoChips;
-Plane FlyerBasket;
+Plane FryerBasket;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -379,6 +384,9 @@ float breath_ty = 0.5f;
 
 //게임화면
 UIMesh game_ui;
+bool potato_cooked_finish = false;
+bool potato_fry_timer = false;
+float flip_bar_tx = -0.8f;
 float score[4][2] = { 0 };
 float bar_move = 0.0f;
 int bar_dir = 1;
@@ -389,6 +397,8 @@ int jcnt = 0;
 GLvoid drawScene() {
     if (start) {
         start = false;
+        LoadOBJ("cube.obj", Cube.mesh);
+        Cube.mesh[0].textureFile = "white.png";
         LoadOBJ("spongebob/spongebob.obj", SpongeBob.mesh);
         LoadMTL("spongebob", "spongebob/spongebob.mtl", SpongeBob.mesh, SpongeBob.texture_cnt);
         SpongeBob.mesh[1].textureFile = "spongebob/z3spon3.png";
@@ -413,10 +423,9 @@ GLvoid drawScene() {
         LoadOBJ("Potato/potato.obj", Potato.mesh);
         Potato.mesh[0].textureFile = "Potato/potato.png";
         LoadOBJ("PotatoChips/Chips.obj", PotatoChips.mesh);
-        PotatoChips.mesh[0].textureFile = "PotatoChips/Chips.png";
-        cout << "ㅅㅂ";
-        LoadOBJ("Fryer Basket/FrierBasket.obj", FlyerBasket.mesh);
-        LoadMTL("Fryer Basket", "Fryer Basket/FrierBasket.mtl", FlyerBasket.mesh, FlyerBasket.texture_cnt);
+        PotatoChips.mesh[0].textureFile = "PotatoChips/sang_Chips.png";
+        LoadOBJ("FryerBasket/FryerBasket.obj", FryerBasket.mesh);
+        FryerBasket.mesh[0].textureFile = "FryerBasket/FryerBasket.png";
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -458,7 +467,8 @@ GLvoid drawScene() {
     glm::vec3 cameraUp;
 
     glUniform3f(lightPosLocation, light_x, light_y, light_z);
-    glUniform3f(lightColorLocation, 1.0, 1.0, 1.0);
+    glUniform4f(lightColorLocation, 1.0, 1.0, 1.0, 1.0f);
+    glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
 
     // 그리기 코드    
 
@@ -584,28 +594,46 @@ GLvoid drawScene() {
     case 7:
     {
         TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+        TR = glm::translate(TR, glm::vec3(0.0f, -0.8f, -1.0f));
         TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
         for (int i = 0; i < PotatoChips.mesh.size(); ++i) {
+            if (flip_bar_tx >= -0.8f && flip_bar_tx <= -0.1f)PotatoChips.mesh[0].textureFile = "PotatoChips/sang_Chips.png";
+            else if (flip_bar_tx >= -0.1f && flip_bar_tx <= 0.1f)PotatoChips.mesh[0].textureFile = "PotatoChips/Chips.png";
+            else if (flip_bar_tx >= 0.6f)PotatoChips.mesh[0].textureFile = "PotatoChips/tan_Chips.png";
             PotatoChips.mesh[0].Texturing();
             PotatoChips.mesh[i].Bind();
             PotatoChips.mesh[i].Draw();
         }
 
         TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
-        TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        TR = glm::scale(TR, glm::vec3(1.0f, 1.0f, 1.0f));
+        TR = glm::translate(TR, glm::vec3(0.0f, -0.2f, -2.0f));
+        TR = glm::rotate(TR, (float)glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(1.0f, 0.2f, 0.2f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
 
-        for (int i = 0; i < FlyerBasket.mesh.size(); ++i) {
-            FlyerBasket.mesh[i].Texturing();
-            FlyerBasket.mesh[i].Bind();
-            FlyerBasket.mesh[i].Draw();
+        for (int i = 0; i < FryerBasket.mesh.size(); ++i) {
+            FryerBasket.mesh[0].Texturing();
+            FryerBasket.mesh[i].Bind();
+            FryerBasket.mesh[i].Draw();
         }
+
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, -1.0f, -1.0f));
+        TR = glm::scale(TR, glm::vec3(0.8f, 0.3f, 0.5f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+        glUniform4f(objColorLocation, 1.0f, 1.0f, 0.0f, 0.5f);
+        for (int i = 0; i < Cube.mesh.size(); ++i) {
+            Cube.mesh[0].Texturing();
+            Cube.mesh[i].Bind();
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            Cube.mesh[i].Draw();
+            glDisable(GL_BLEND);
+        }
+        glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
     }
     break;
     }
@@ -688,7 +716,8 @@ GLvoid drawScene() {
         story_background.textureFile = "resource/story_bg_0.png";
         story_background.Texturing();
         story_background.Bind();
-        story_background.Draw(); }
+        story_background.Draw(); 
+        }
 
         { //기본 바 
             game_ui.textureFile = "resource/fry_ui.png";
@@ -727,7 +756,36 @@ GLvoid drawScene() {
             game_ui.Draw();
         }
     }
+            game_ui.Draw();
+        }
+    }
     break;
+    case 7:
+    {
+        
+        { // 움직이는 바
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            game_ui.textureFile = "resource/flip_bar.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        { //기본 바 
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            game_ui.textureFile = "resource/fry_potato_ui.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            game_ui.Draw();
+        }
+        
+    }
+        break;
     }
 
     glutSwapBuffers();
@@ -777,6 +835,17 @@ void keyboard(unsigned char key, int x, int y) {
             break; }
         }
         break;
+    case 7:
+        switch (key) {
+        case GLUT_KEY_SPACE:
+            if (!potato_fry_timer && flip_bar_tx <= -0.8f)potato_fry_timer = !potato_fry_timer;
+            else if (potato_fry_timer) {
+                potato_fry_timer = !potato_fry_timer;
+                potato_cooked_finish = true;
+            }
+            break;
+        }
+    break;
     }
     glutPostRedisplay();
 }
@@ -881,6 +950,13 @@ void TimerFunction(int value)
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
+        if (potato_fry_timer) {
+            flip_bar_tx += 0.05f;
+            if (flip_bar_tx >= 0.8f) {
+                potato_fry_timer = !potato_fry_timer;
+                potato_cooked_finish = true;
+            }
+        }
     }
     break;
     }
