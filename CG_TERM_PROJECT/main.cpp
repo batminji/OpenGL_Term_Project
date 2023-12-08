@@ -22,6 +22,14 @@
 
 #define GLUT_KEY_SPACE 0x20
 
+#define TITILE_SCENE 0
+#define STORY_SCENE 1
+#define BREAD_SCENE 3
+#define CHEESE_SCENE 4
+#define POTATO_CUT_SCENE 6
+#define POTATO_FRY_SCENE 7
+#define COKE_SCENE 8
+
 
 using namespace std;
 using namespace FMOD;
@@ -29,7 +37,7 @@ using namespace FMOD;
 random_device rd;
 default_random_engine dre(rd());
 uniform_real_distribution<float>uid(0.0f, 1.0f);
-uniform_real_distribution<float>urd_coke_tx(-0.1f, 0.1f);
+uniform_real_distribution<float>urd_coke_tx(-0.05f, 0.05f);
 uniform_real_distribution<float>urd_coke_tz(-0.5f, 0.5f);
 
 void make_vertexShaders();
@@ -432,6 +440,7 @@ float potato_chips_trans[7][2] = {
 bool potato_show = true, potato_cut_success = false;
 float potato_scale_x = 0.05f, potato_tx = 0.0f;
 bool pour_coke = false, pour_done = false;
+float coke_scale_y = 0.0f;
 
 GLvoid drawScene() {
     if (start) {
@@ -631,9 +640,9 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].Draw();
     }
     break;
-    case 6:
+    case 7:
     {
-        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(-1, 2, 1.5), glm::vec3(0, 0, 0), cameraUp)));
+        // glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(-0.8, 2.5, 2), glm::vec3(0, 0, 0), cameraUp)));
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
         TR = glm::rotate(TR, (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -667,10 +676,10 @@ GLvoid drawScene() {
         }
     }
     break;
-    case 7:
+    case 8:
     {
         TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(0.0f, -0.8f, -1.0f));
+        TR = glm::translate(TR, glm::vec3(0.0f, -1.0f, -1.0f));
         TR = glm::scale(TR, glm::vec3(1.5f, 1.5f, 1.5f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
         
@@ -710,7 +719,7 @@ GLvoid drawScene() {
         glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
     }
     break;
-    case 8:
+    case 9:
     {
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, -0.5f, 0.5f));
@@ -726,9 +735,9 @@ GLvoid drawScene() {
         for (int i = 0; i < cokeblock.size(); ++i) {
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(cokeblock[i].tx, cokeblock[i].ty, cokeblock[i].tz));
-            TR = glm::scale(TR, glm::vec3(0.1f, 0.1f, 0.1f));
+            TR = glm::scale(TR, glm::vec3(0.05f, 0.05f, 0.05f));
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
-            glUniform4f(objColorLocation, 0.211, 0.098, 0.019, 0.7f);
+            glUniform4f(objColorLocation, 0.211, 0.098, 0.019, 0.9f);
             Cube.mesh[0].Texturing();
             Cube.mesh[0].Bind();
             glEnable(GL_BLEND);
@@ -736,6 +745,20 @@ GLvoid drawScene() {
             Cube.mesh[0].Draw();
             glDisable(GL_BLEND);
         }
+        glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+
+        /*TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.5f));
+        TR = glm::scale(TR, glm::vec3(0.2f, 0.5f, 0.2f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+        glUniform4f(objColorLocation, 0.211, 0.098, 0.019, 0.9f);
+        Cube.mesh[0].Texturing();
+        Cube.mesh[0].Bind();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Cube.mesh[0].Draw();
+        glDisable(GL_BLEND);
+        glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);*/
     }
         break;
     }
@@ -917,8 +940,18 @@ GLvoid drawScene() {
         }
     }
           break;
-    case 6:
+    case 7:
     { 
+        { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/potato_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
         if (potato_cut_success) {
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -959,8 +992,18 @@ GLvoid drawScene() {
         
     }
         break;
-    case 7:
+    case 8:
     {   
+        { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/fry_station_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
         if (potato_cooked_finish) {
             TR = glm::mat4(1.0f);
             TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
@@ -993,6 +1036,20 @@ GLvoid drawScene() {
 
     }
     break;
+    case 9:
+    {
+        { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/potato_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
+    }
+        break;
     }
 
     glutSwapBuffers();
@@ -1039,7 +1096,7 @@ void keyboard(unsigned char key, int x, int y) {
         break; }
         }
     break;
-    case 6:
+    case 7:
         switch (key) {
         case GLUT_KEY_SPACE:
             if (potato_cut_success) {
@@ -1059,7 +1116,7 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         }
         break;
-    case 7:
+    case 8:
         switch (key) {
         case GLUT_KEY_SPACE:
             if (potato_cooked_finish) {
@@ -1073,7 +1130,7 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         }
         break;
-    case 8:
+    case 9:
         switch (key) {
         case GLUT_KEY_SPACE:
             if (!pour_coke)pour_coke = !pour_coke;
@@ -1183,10 +1240,10 @@ void TimerFunction(int value)
         if (time_angle > 540.0f) SCENE = 5, time_angle = 0;
     }
           break;
-    case 6:
+    case 7:
     {
-        /*CameraPos = { 0.0f, 2.0f, 2.0f };
-        CameraAt = { 0.0f, 0.0f, 0.0f };*/
+        CameraPos = { 0.0f, 3.0f, 1.5f };
+        CameraAt = { 0.0f, 0.0f, 0.0f };
         if (potato_show) {
             if (flip_bar_dir) {
                 flip_bar_tx += 0.1f;
@@ -1202,10 +1259,10 @@ void TimerFunction(int value)
         }
     }
     break;
-    case 7:
+    case 8:
     {
-        CameraPos = { 0.0f, 2.0f, 2.0f };
-        CameraAt = { 0.0f, 0.0f, 0.0f };
+        CameraPos = { -2.0f, 0.5f, 1.0f };
+        CameraAt = { 0.0f, -1.0f, -1.0f };
         if (oil_timer) {
             oil_scale_y += 0.01f;
             if (oil_scale_y >= 0.5f) {
@@ -1222,18 +1279,22 @@ void TimerFunction(int value)
         }
     }
     break;
-    case 8:
+    case 9:
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
         if (pour_coke) {
             temp_block.tx = urd_coke_tx(dre); temp_block.ty = 1.0f; temp_block.tz = urd_coke_tz(dre);
             cokeblock.push_back(temp_block);
-
-            for (int i = 0; i < cokeblock.size(); ++i) {
-                if (cokeblock[i].ty >= -0.5f) {
-                    cokeblock[i].ty -= 0.05f;
-                }
+            coke_scale_y += 0.02f;
+        }
+        for (int i = 0; i < cokeblock.size();) {
+            if (cokeblock[i].ty >= -0.5f) {
+                cokeblock[i].ty -= 0.05f;
+                ++i;
+            }
+            else {
+                cokeblock.erase(cokeblock.begin() + i);
             }
         }
     }
