@@ -381,7 +381,8 @@ UIMesh flip_bar;
 bool potato_cooked_finish = false;
 bool oil_timer = false;
 bool potato_fry_timer = false;
-float score[4][2] = { 0 };
+float score[10][2] = { 0 };
+int game_result[10] = { 0 };
 float bar_move = 0.0f;
 float time_angle = 0.0f;
 int bar_dir = 1;
@@ -722,7 +723,7 @@ GLvoid drawScene() {
             game_ui.Bind();
             game_ui.Draw();
             game_ui.textureFile = "resource/clock_pointer.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))* glm::rotate(glm::mat4(1.0f), glm::radians(time_angle), glm::vec3(0, 0, 1))* glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.2f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))* glm::translate(glm::mat4(1.0f), glm::vec3(0.33f, 0.38f, 2.2f))* glm::translate(glm::mat4(1.0f), glm::vec3(+0.01875f, -0.01875f, 0.0f))*glm::rotate(glm::mat4(1.0f), glm::radians(max(-360.0f, - time_angle)), glm::vec3(0, 0, 1))* glm::translate(glm::mat4(1.0f), glm::vec3(-0.01875f, +0.01875f, 0.0f))));
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
@@ -763,7 +764,15 @@ GLvoid drawScene() {
             game_ui.Bind();
             game_ui.Draw();
         }
-        
+        { //결과출력
+            if (game_result[3] != 0) {
+                (game_result[3] == 1) ? game_ui.textureFile = "resource/good.png" : game_ui.textureFile = "resource/fail.png";
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(time_angle/300.0, time_angle/300.0, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0f, 2.3f))));
+                game_ui.Texturing();
+                game_ui.Bind();
+                game_ui.Draw();
+            }
+        }
     }
     break;
     case 6:
@@ -856,18 +865,8 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     case 3:
         switch (key) {
-        case 'z':
-            fryfan.rotate_z -= 10.0f;
-            break;
-        case 'Z':
-            fryfan.rotate_z += 10.0f;
-            break;
-        case 'x': fryfan.rotate_x -= 10.0f; break;
-        case 'X': fryfan.rotate_x += 10.0f; break;
-        case 'y': fryfan.rotate_y -= 10.0f; break;
-        case 'Y': fryfan.rotate_y += 10.0f; break;
         case GLUT_KEY_SPACE:
-        {   if (bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0)jcnt = 1, score[3][1] += 4.0f;
+        {   if (time_angle<360.0f&&bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0)jcnt = 1, score[3][1] += 4.0f;
         break; }
         }
         break;
@@ -962,21 +961,26 @@ void TimerFunction(int value)
     }
     break;
     case 3: {
-        time_angle += 1.0f;
-        bar_move += (bar_dir) * 0.1;
-        if (bar_move > 0.45) bar_dir = -1, bar_move = 0.45;
-        if (bar_move < -0.45)bar_dir = 1, bar_move = -0.45;
-        if (jcnt > 0 && jcnt < 10) {
-            fryfan.rotate_x += 2.0f;
-            for (int c = 0; c < 2; c++) bread[c].move.y += 0.4, bread[c].rotate_z += 10.0f;
-            jcnt++;
+        time_angle += 2.0f;
+        if (time_angle < 360.0f) {
+            bar_move += (bar_dir) * 0.1;
+            if (bar_move > 0.45) bar_dir = -1, bar_move = 0.45;
+            if (bar_move < -0.45)bar_dir = 1, bar_move = -0.45;
+            if (jcnt > 0 && jcnt < 10) {
+                fryfan.rotate_x += 2.0f;
+                for (int c = 0; c < 2; c++) bread[c].move.y += 0.4, bread[c].rotate_z += 10.0f;
+                jcnt++;
+            }
+            if (jcnt >= 9) {
+                fryfan.rotate_x -= 2.0f;
+                for (int c = 0; c < 2; c++) bread[c].move.y -= 0.4, bread[c].rotate_z += 10.0f;
+                jcnt++;
+                if (jcnt == 19)printf("%f", bread[0].rotate_z), jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
+            }
+            if ((int)score[3][0] >= 20 && (int)score[3][1] >= 20) game_result[3] = 1,time_angle = 360.0f;
         }
-        if (jcnt >= 9) {
-            fryfan.rotate_x -= 2.0f;
-            for (int c = 0; c < 2; c++) bread[c].move.y -= 0.4, bread[c].rotate_z += 10.0f;
-            jcnt++;
-            if (jcnt == 19)printf("%f", bread[0].rotate_z), jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
-        }
+        if (time_angle >= 360.0 && game_result[3] == 0) { if ((int)score[3][0] < 20 || (int)score[3][1] < 20) game_result[3] = 2; }
+        if (time_angle > 440.0f) SCENE = 4,time_angle = 0;
     }
           break;
     case 6:
@@ -1043,9 +1047,6 @@ void Mouse(int button, int state, int x, int y)
     }
     else {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-            printf("fryfan_rotate : (%f, %f, %f )\n", fryfan.rotate_x, fryfan.rotate_y, fryfan.rotate_z);
-            printf("score =%f\n", score[3][0]);
-            printf("bread_angle =%f\n", bread_angle);
         }
         if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 
@@ -1068,7 +1069,7 @@ void Motion(int x, int y)
         }
     }
     else {
-        if (jcnt == 0) {
+        if (jcnt == 0&&time_angle <360.0f) {
             fryfan.rotate_x = -100.0f + fabs(atan2(mx, my));
             fryfan.rotate_z = fabs(atan2(mx, my));
             score[3][0] += fabs(bread_angle - atan2(mx, my));
