@@ -29,6 +29,8 @@ using namespace FMOD;
 random_device rd;
 default_random_engine dre(rd());
 uniform_real_distribution<float>uid(0.0f, 1.0f);
+uniform_real_distribution<float>urd_coke_tx(-0.1f, 0.1f);
+uniform_real_distribution<float>urd_coke_tz(-0.5f, 0.5f);
 
 void make_vertexShaders();
 void make_fragmentShaders();
@@ -259,6 +261,12 @@ public:
    }
         
 };
+class CokeBlock {
+public:
+    float tx, ty, tz;
+};
+vector<CokeBlock>cokeblock;
+CokeBlock temp_block;
 slice_food cheeses[40];
 int cheese_slice = 0;
 Plane Cube;
@@ -423,6 +431,7 @@ float potato_chips_trans[7][2] = {
 };
 bool potato_show = true, potato_cut_success = false;
 float potato_scale_x = 0.05f, potato_tx = 0.0f;
+bool pour_coke = false, pour_done = false;
 
 GLvoid drawScene() {
     if (start) {
@@ -624,6 +633,7 @@ GLvoid drawScene() {
     break;
     case 6:
     {
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(-1, 2, 1.5), glm::vec3(0, 0, 0), cameraUp)));
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, 0.0f));
         TR = glm::rotate(TR, (float)glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -711,6 +721,20 @@ GLvoid drawScene() {
             Coke.mesh[0].Texturing();
             Coke.mesh[i].Bind();
             Coke.mesh[i].FanDraw();
+        }
+
+        for (int i = 0; i < cokeblock.size(); ++i) {
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(cokeblock[i].tx, cokeblock[i].ty, cokeblock[i].tz));
+            TR = glm::scale(TR, glm::vec3(0.1f, 0.1f, 0.1f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            glUniform4f(objColorLocation, 0.211, 0.098, 0.019, 0.7f);
+            Cube.mesh[0].Texturing();
+            Cube.mesh[0].Bind();
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            Cube.mesh[0].Draw();
+            glDisable(GL_BLEND);
         }
     }
         break;
@@ -1049,6 +1073,13 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         }
         break;
+    case 8:
+        switch (key) {
+        case GLUT_KEY_SPACE:
+            if (!pour_coke)pour_coke = !pour_coke;
+            break;
+        }
+        break;
     }
     glutPostRedisplay();
 }
@@ -1159,8 +1190,8 @@ void TimerFunction(int value)
     break;
     case 6:
     {
-        CameraPos = { 0.0f, 2.0f, 2.0f };
-        CameraAt = { 0.0f, 0.0f, 0.0f };
+        /*CameraPos = { 0.0f, 2.0f, 2.0f };
+        CameraAt = { 0.0f, 0.0f, 0.0f };*/
         if (potato_show) {
             if (flip_bar_dir) {
                 flip_bar_tx += 0.1f;
@@ -1200,6 +1231,16 @@ void TimerFunction(int value)
     {
         CameraPos = { 0.0f, 2.0f, 2.0f };
         CameraAt = { 0.0f, 0.0f, 0.0f };
+        if (pour_coke) {
+            temp_block.tx = urd_coke_tx(dre); temp_block.ty = 1.0f; temp_block.tz = urd_coke_tz(dre);
+            cokeblock.push_back(temp_block);
+
+            for (int i = 0; i < cokeblock.size(); ++i) {
+                if (cokeblock[i].ty >= -0.5f) {
+                    cokeblock[i].ty -= 0.05f;
+                }
+            }
+        }
     }
         break;
     }
