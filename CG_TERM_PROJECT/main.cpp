@@ -209,6 +209,11 @@ public:
         glDrawArrays(GL_TRIANGLES, 0, vertex.size());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+    void FanDraw() {
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, vertex.size());
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 };
 
 class Plane {
@@ -239,6 +244,7 @@ Plane BikiniMap;
 Plane bread[2];
 Plane fryfan;
 Plane CuttingBoard;
+Plane Potato;
 
 float BackGround[] = { 0.0, 0.0, 0.0 };
 
@@ -396,6 +402,8 @@ GLvoid drawScene() {
         fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
+        LoadOBJ("Potato/potato.obj", Potato.mesh);
+        Potato.mesh[0].textureFile = "Potato/potato.png";
         {
             title_logo.textureFile = "resource/title_logo.png";
             press_space.textureFile = "resource/press_space_bar.png";
@@ -546,6 +554,18 @@ GLvoid drawScene() {
             CuttingBoard.mesh[i].Bind();
             CuttingBoard.mesh[i].Draw();
         }
+
+        TR = glm::mat4(1.0f);
+        TR = glm::translate(TR, glm::vec3(0.0f, 0.2f, 0.0f));
+        TR = glm::rotate(TR, (float)glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        TR = glm::scale(TR, glm::vec3(0.05f, 0.05f, 0.05f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+
+        for (int i = 0; i < Potato.mesh.size(); ++i) {
+            Potato.mesh[0].Texturing();
+            Potato.mesh[i].Bind();
+            Potato.mesh[i].FanDraw();
+        }
     }
         break;
     }
@@ -630,11 +650,6 @@ GLvoid drawScene() {
         story_background.Draw();
     }
     break;
-    case 6:
-    {
-
-    }
-        break;
     }
 
     glutSwapBuffers();
