@@ -384,7 +384,6 @@ UIMesh flip_bar;
 bool potato_cooked_finish = false;
 bool oil_timer = false;
 bool potato_fry_timer = false;
-float flip_bar_tx = -0.8f;
 float score[4][2] = { 0 };
 float bar_move = 0.0f;
 int bar_dir = 1;
@@ -416,7 +415,7 @@ GLvoid drawScene() {
         fryfan.size = 1.0f;
         fryfan.rotate_x = -100.0f;
         fryfan.move = glm::vec3(0.000000, 1.500000, 4.899998);
-        LoadOBJ_single("tool/pan.obj",fryfan.mesh);
+        LoadOBJ_single("tool/pan.obj", fryfan.mesh);
         fryfan.mesh[0].textureFile = "tool/TOBJ_0.png";
         LoadOBJ("Cutting Board/cuttingboard.obj", CuttingBoard.mesh);
         CuttingBoard.mesh[0].textureFile = "Cutting Board/cuttingboard_d.png";
@@ -545,24 +544,24 @@ GLvoid drawScene() {
     }
     break;
     case 3:
-    {  
-     
-        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2),glm::vec3(0, 0, 0), cameraUp)));
+    {
+
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
 
         for (int i = 0; i < 2; i++) {
-        for (Mesh m : bread[i].mesh) {
-            bread[i].mesh[0].Texturing();
-            m.Bind();
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
-            m.Draw();
+            for (Mesh m : bread[i].mesh) {
+                bread[i].mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[i].my_TR()));
+                m.Draw();
+            }
+            for (int j = 0; j < fryfan.mesh.size(); j++) {
+                fryfan.mesh[0].Texturing();
+                fryfan.mesh[j].Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(fryfan.my_TR()));
+                fryfan.mesh[j].Draw();
+            }
         }
-        for (int j = 0; j <fryfan.mesh.size();j++) {
-            fryfan.mesh[0].Texturing();
-            fryfan.mesh[j].Bind();
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(fryfan.my_TR()));
-            fryfan.mesh[j].Draw();
-        }
-    }
     }
     break;
     case 6:
@@ -575,7 +574,7 @@ GLvoid drawScene() {
         CuttingBoard.mesh[0].Texturing();
         CuttingBoard.mesh[0].Bind();
         CuttingBoard.mesh[0].Draw();
-        
+
 
         TR = glm::mat4(1.0f);
         TR = glm::translate(TR, glm::vec3(0.0f, 0.2f, 0.0f));
@@ -587,7 +586,7 @@ GLvoid drawScene() {
         Potato.mesh[0].Bind();
         Potato.mesh[0].FanDraw();
     }
-        break;
+    break;
     case 7:
     {
         TR = glm::mat4(1.0f);
@@ -705,38 +704,38 @@ GLvoid drawScene() {
     case 3:
     {
         { //배경
-        TR = glm::mat4(1.0f);
-        TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
-        TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
-        story_background.textureFile = "resource/story_bg_0.png";
-        story_background.Texturing();
-        story_background.Bind();
-        story_background.Draw(); 
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/story_bg_0.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
         }
 
         { //기본 바 
             game_ui.textureFile = "resource/fry_ui.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f))));
             game_ui.Texturing();
             game_ui.Bind();
             game_ui.Draw();
         }
         { //볶기 바 
             game_ui.textureFile = "resource/rotate_bar.png";
-         
+
             game_ui.Texturing();
             game_ui.Bind();
-            for (int c = 0; c < (int)score[3][0]/10.0 &&c <20; c++) {
-                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f))* glm::translate(glm::mat4(1.0f), glm::vec3(0.0f+c*0.011, 0.0f, 3.0f))));
+            for (int c = 0; c < (int)score[3][0] / 10.0 && c < 20; c++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + c * 0.011, 0.0f, 3.0f))));
                 game_ui.Draw();
             }
-         
-           
+
+
         }
         { //뒤집기 바 
             game_ui.textureFile = "resource/fry_bar.png";
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f))*glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f))));
             game_ui.Texturing();
             game_ui.Bind();
             for (int c = 0; c < (int)score[3][1] && c < 20; c++) {
@@ -749,9 +748,6 @@ GLvoid drawScene() {
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(bar_move, 0.0f, 4.0f))));
             game_ui.Texturing();
             game_ui.Bind();
-            game_ui.Draw();
-        }
-    }
             game_ui.Draw();
         }
     }
