@@ -135,10 +135,7 @@ public:
     }
     void Draw() {
         glBindVertexArray(VAO);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDisable(GL_BLEND);
     }
 };
 UIMesh title_logo;
@@ -390,7 +387,7 @@ int bar_dir = 1;
 int jcnt = 0;
 bool flip_bar_dir = true;
 float flip_bar_tx = -0.8f, oil_scale_y = 0.0f;
-
+int potato_gauge = 0;
 
 
 GLvoid drawScene() {
@@ -698,7 +695,10 @@ GLvoid drawScene() {
         speech_bubble.textureFile = textfile;
         speech_bubble.Texturing();
         speech_bubble.Bind();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         speech_bubble.Draw();
+        glDisable(GL_BLEND);
     }
     break;
     case 3:
@@ -754,6 +754,15 @@ GLvoid drawScene() {
     break;
     case 6:
     { 
+        {
+            game_ui.textureFile = "resource/rotate_bar.png";
+            game_ui.Texturing();
+            game_ui.Bind();
+            for (int i = 0; i < potato_gauge; i++) {
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f + i * 0.011, 0.0f, 0.0f))));
+                game_ui.Draw();
+            }
+        }
         { // 움직이는 바
             TR = glm::mat4(1.0f);
             TR = glm::translate(TR, glm::vec3(flip_bar_tx, 0.0f, 0.0f));
@@ -846,6 +855,13 @@ void keyboard(unsigned char key, int x, int y) {
         case GLUT_KEY_SPACE:
         {   if (bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt ==0)jcnt =1, score[3][1] += 4.0f;
             break; }
+        }
+        break;
+    case 6:
+        switch (key) {
+        case GLUT_KEY_SPACE:
+            
+            break;
         }
         break;
     case 7:
