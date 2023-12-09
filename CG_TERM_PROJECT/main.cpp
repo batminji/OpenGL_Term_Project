@@ -24,8 +24,10 @@
 
 #define TITILE_SCENE 0
 #define STORY_SCENE 1
+#define GUEST_SCENE 2
 #define BREAD_SCENE 3
 #define CHEESE_SCENE 4
+#define VEGETABLE_SCENE 5
 #define POTATO_CUT_SCENE 6
 #define POTATO_FRY_SCENE 7
 #define COKE_SCENE 8
@@ -58,7 +60,9 @@ GLuint VAO, VBO[3];
 System* ssystem;
 Sound* bgm;
 Sound* click_sound;
-Channel* channel = 0;
+Sound* potato_fry_sound;
+Channel* bgm_channel = 0;
+Channel* effect_channel = 0;
 FMOD_RESULT result;
 void* extradriverdata = 0;
 
@@ -567,7 +571,7 @@ GLvoid drawScene() {
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
         ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
-        ssystem->playSound(bgm, 0, false, &channel);
+        ssystem->playSound(bgm, 0, false, &bgm_channel);
     }
     stbi_set_flip_vertically_on_load(true);
     glViewport(0, 0, WINDOWX, WINDOWY);
@@ -1379,7 +1383,7 @@ void keyboard(unsigned char key, int x, int y) {
         case GLUT_KEY_SPACE:
             Story_Show = !Story_Show;
             if (Text_cnt < 7) {
-                ssystem->playSound(click_sound, 0, false, &channel);
+                ssystem->playSound(click_sound, 0, false, &bgm_channel);
                 Text_cnt++;
             }
             else SCENE = 2;
@@ -1391,7 +1395,7 @@ void keyboard(unsigned char key, int x, int y) {
         switch (key) {
         case GLUT_KEY_SPACE:
             if (Guest_Text_cnt < 3) {
-                ssystem->playSound(click_sound, 0, false, &channel);
+                ssystem->playSound(click_sound, 0, false, &bgm_channel);
                 Guest_Text_cnt++;
             }
             else SCENE = 3;
@@ -1510,11 +1514,11 @@ void TimerFunction(int value)
             else if (line_t >= 1.0f && start_index == 2) {
                 line_t += 0.1f;
                 if (line_t >= 2.0f) {
-                    SCENE = 1;
-                    channel->stop();
+                    SCENE++;
+                    bgm_channel->stop();
                     bgm->release();
                     ssystem->createSound("sound/story_bgm.mp3", 0, 0, &bgm);
-                    ssystem->playSound(bgm, 0, false, &channel);
+                    ssystem->playSound(bgm, 0, false, &bgm_channel);
                 }
             }
             else {
@@ -1543,6 +1547,10 @@ void TimerFunction(int value)
             timer_cnt++;
             if (timer_cnt == 60) {
                 SCENE++; timer_cnt = 0;
+                bgm_channel->stop();
+                bgm->release();
+                ssystem->createSound("sound/guest_bgm.mp3", 0, 0, &bgm);
+                ssystem->playSound(bgm, 0, false, &bgm_channel);
             }
         }
     }
@@ -1566,6 +1574,10 @@ void TimerFunction(int value)
             timer_cnt++;
             if (timer_cnt == 60) {
                 SCENE++; timer_cnt = 0;
+                bgm_channel->stop();
+                bgm->release();
+                ssystem->createSound("sound/cooking_bgm.mp3", 0, 0, &bgm);
+                ssystem->playSound(bgm, 0, false, &bgm_channel);
             }
         }
     }
@@ -1661,6 +1673,9 @@ void TimerFunction(int value)
             if (oil_scale_y >= 0.5f) {
                 oil_timer = !oil_timer;
                 potato_fry_timer = true;
+                effect_channel->stop();
+                ssystem->createSound("sound/potato_fry_sound.mp3", 0, 0, &potato_fry_sound);
+                ssystem->playSound(potato_fry_sound, 0, false, &effect_channel);
             }
         }
         if (potato_fry_timer) {
@@ -1668,6 +1683,7 @@ void TimerFunction(int value)
             if (flip_bar_tx >= 0.8f) {
                 potato_fry_timer = !potato_fry_timer;
                 potato_cooked_finish = true;
+                // 성공 / 실패 사운드
             }
         }
     }
@@ -2021,43 +2037,7 @@ void LoadMTL(const char* FileName, const char* mtlFileName, vector<Mesh>& out_me
 
             curr_mesh++;
             tex_cnt = curr_mesh;
-        }/*
-        else if (token == "Ka") {
-            glm::vec3 ambientColor;
-            iss >> ambientColor.x >> ambientColor.y >> ambientColor.z;
-            out_mesh[curr_mesh].Ka = ambientColor;
         }
-        else if (token == "Kd") {
-            glm::vec3 diffuseColor;
-            iss >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
-            out_mesh[curr_mesh].Kd = diffuseColor;
-        }
-        else if (token == "Ks") {
-            glm::vec3 specularColor;
-            iss >> specularColor.x >> specularColor.y >> specularColor.z;
-            out_mesh[curr_mesh].Ks = specularColor;
-        }
-        else if (token == "Ns") {
-            float shininess;
-            iss >> shininess;
-            out_mesh[curr_mesh].Ns = shininess;
-        }
-        else if (token == "d") {
-            float dissolve;
-            iss >> dissolve;
-            out_mesh[curr_mesh].d = dissolve;
-        }
-        else if (token == "Ni") {
-            float opticalDensity;
-            iss >> opticalDensity;
-            out_mesh[curr_mesh].Ni = opticalDensity;
-        }
-        else if (token == "illum") {
-            int illuminationModel;
-            iss >> illuminationModel;
-            out_mesh[curr_mesh].illum = illuminationModel;
-        }*/
-        // Add more cases for other MTL properties if needed
         else if (token == "map_Kd") {
             string texs;
             iss >> texs;
