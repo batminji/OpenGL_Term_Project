@@ -61,6 +61,11 @@ System* ssystem;
 Sound* bgm;
 Sound* click_sound;
 Sound* potato_fry_sound;
+Sound* bread_fry_sound;
+Sound* steak_fry_sound;
+Sound* slice_sound;
+Sound* washing_sound;
+Sound* coke_sound;
 Channel* bgm_channel = 0;
 Channel* effect_channel = 0;
 FMOD_RESULT result;
@@ -572,6 +577,7 @@ GLvoid drawScene() {
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
         ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
         ssystem->playSound(bgm, 0, false, &bgm_channel);
+        bgm_channel->setVolume(0.5f);
     }
     stbi_set_flip_vertically_on_load(true);
     glViewport(0, 0, WINDOWX, WINDOWY);
@@ -1413,7 +1419,12 @@ void keyboard(unsigned char key, int x, int y) {
     case 4:
         switch (key) {
         case GLUT_KEY_SPACE:
-        {   if (time_angle < 360.0f && cheese_slice<40)cheeses[cheese_slice].slice =1 , cheese_slice++;
+        {   if (time_angle < 360.0f && cheese_slice < 40) {
+            cheeses[cheese_slice].slice = 1, cheese_slice++;
+            effect_channel->stop();
+            ssystem->createSound("sound/knife_slice.mp3", FMOD_DEFAULT, 0, &slice_sound);
+            ssystem->playSound(slice_sound, 0, false, &effect_channel);
+        }
         break; }
         }
     break;
@@ -1444,6 +1455,8 @@ void keyboard(unsigned char key, int x, int y) {
                         potato_show = false; potato_cut_success = true;
                     }
                 }
+                effect_channel->stop();
+                ssystem->playSound(slice_sound, 0, false, &effect_channel);
             }
             break;
         }
@@ -1457,10 +1470,15 @@ void keyboard(unsigned char key, int x, int y) {
             }
             if (!oil_timer && oil_scale_y <= 0.0f) {
                 oil_timer = !oil_timer;
+                effect_channel->stop();
+                ssystem->createSound("sound/potato_fry_sound.mp3", FMOD_LOOP_NORMAL, 0, &potato_fry_sound);
+                ssystem->playSound(potato_fry_sound, 0, false, &effect_channel);
             }
             if (potato_fry_timer) {
                 potato_fry_timer = !potato_fry_timer;
                 potato_cooked_finish = true;
+                effect_channel->stop();
+                potato_fry_sound->release();
             }
             break;
         }
@@ -1471,10 +1489,17 @@ void keyboard(unsigned char key, int x, int y) {
             if (pour_done) {
                 SCENE++;
             }
-            if (!pour_coke && flip_bar_tx <= -0.8f)pour_coke = !pour_coke;
+            if (!pour_coke && flip_bar_tx <= -0.8f) {
+                pour_coke = !pour_coke;
+                effect_channel->stop();
+                ssystem->createSound("sound/coke.mp3", FMOD_DEFAULT, 0, &coke_sound);
+                ssystem->playSound(coke_sound, 0, false, &effect_channel);
+            }
             else if (pour_coke && flip_bar_tx >= -0.8f) {
                 pour_coke = !pour_coke;
                 pour_done = true;
+                effect_channel->stop();
+                coke_sound->release();
             }
             break;
         }
@@ -1519,7 +1544,7 @@ void TimerFunction(int value)
                     SCENE++;
                     bgm_channel->stop();
                     bgm->release();
-                    ssystem->createSound("sound/story_bgm.mp3", 0, 0, &bgm);
+                    ssystem->createSound("sound/story_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
                     ssystem->playSound(bgm, 0, false, &bgm_channel);
                 }
             }
@@ -1551,7 +1576,7 @@ void TimerFunction(int value)
                 SCENE++; timer_cnt = 0;
                 bgm_channel->stop();
                 bgm->release();
-                ssystem->createSound("sound/guest_bgm.mp3", 0, 0, &bgm);
+                ssystem->createSound("sound/guest_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
                 ssystem->playSound(bgm, 0, false, &bgm_channel);
             }
         }
@@ -1578,8 +1603,13 @@ void TimerFunction(int value)
                 SCENE++; timer_cnt = 0;
                 bgm_channel->stop();
                 bgm->release();
-                ssystem->createSound("sound/cooking_bgm.mp3", 0, 0, &bgm);
+                ssystem->createSound("sound/cooking_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
                 ssystem->playSound(bgm, 0, false, &bgm_channel);
+
+                effect_channel->stop();
+                effect_channel->setVolume(1.0f);
+                ssystem->createSound("sound/bread_fry_sound.mp3", FMOD_LOOP_NORMAL, 0, &bread_fry_sound);
+                ssystem->playSound(bread_fry_sound, 0, false, &effect_channel);
             }
         }
     }
@@ -1603,7 +1633,11 @@ void TimerFunction(int value)
             }
             if ((int)score[3][0] / 10.0 >= 20 && (int) score[3][1] >= 20) game_result[3] = 1,time_angle = 360.0f;
         }
-        if (time_angle >= 360.0 && game_result[3] == 0) { if ((int)score[3][0] / 10.0 < 20 || (int)score[3][1] < 20) game_result[3] = 2; }
+        if (time_angle >= 360.0 && game_result[3] == 0) { 
+            if ((int)score[3][0] / 10.0 < 20 || (int)score[3][1] < 20) game_result[3] = 2; 
+            effect_channel->stop();
+            bread_fry_sound->release();
+        }
         if (time_angle > 440.0f) SCENE = 4,time_angle = 0;
     }
           break;
@@ -1612,7 +1646,12 @@ void TimerFunction(int value)
         for (int i = 0; i < 40; i++) cheeses[i].down();
         if (time_angle < 360.0f && cheese_slice >= 40) time_angle = 360.0f, game_result[4] = 1;
         if (time_angle >= 360.0 && game_result[4] == 0) { if (cheese_slice < 40) game_result[4] = 2; }
-        if (time_angle >480.0f) SCENE = 5, time_angle = 0;
+        if (time_angle > 480.0f) {
+            SCENE = 5, time_angle = 0;
+            effect_channel->stop();
+            ssystem->createSound("sound/steak_fry_sound.mp3", FMOD_LOOP_NORMAL, 0, &steak_fry_sound);
+            ssystem->playSound(steak_fry_sound, 0, false, &effect_channel);
+        }
     }
           break;
     case 5: 
@@ -1636,8 +1675,17 @@ void TimerFunction(int value)
             }
             if ((int)score[5][0] / 10.0 >= 20 && (int)score[5][1] >= 20) game_result[5] = 1, time_angle = 360.0f;
         }
-        if (time_angle >= 360.0 && game_result[5] == 0) { if ((int)score[5][0] / 10.0 < 20 || (int)score[5][1] < 20) game_result[5] = 2; }
-        if (time_angle > 440.0f) SCENE = 6, time_angle = 0;
+        if (time_angle >= 360.0 && game_result[5] == 0) { 
+            if ((int)score[5][0] / 10.0 < 20 || (int)score[5][1] < 20) game_result[5] = 2;
+            effect_channel->stop();
+            steak_fry_sound->release();
+        }
+        if (time_angle > 440.0f) {
+            SCENE = 6, time_angle = 0;
+            effect_channel->stop();
+            ssystem->createSound("sound/washing.mp3", FMOD_LOOP_NORMAL, 0, &washing_sound);
+            ssystem->playSound(washing_sound, 0, false, &effect_channel);
+        }
     }
           break;
     case 6:{
@@ -1646,7 +1694,11 @@ void TimerFunction(int value)
         if (time_angle < 360.0f) {
             if ((int)score[6][0] / 10.0 >= 20) game_result[6] = 1, time_angle = 360.0f;
         }
-        if (time_angle >= 360.0 && game_result[6] == 0) { if ((int)score[6][0] / 10.0 < 10) game_result[6] = 2; }
+        if (time_angle >= 360.0 && game_result[6] == 0) { 
+            if ((int)score[6][0] / 10.0 < 10) game_result[6] = 2; 
+            effect_channel->stop();
+            washing_sound->release();
+        }
         if (time_angle > 440.0f) SCENE = 7, time_angle = 0;
     }
           break;
@@ -1675,9 +1727,6 @@ void TimerFunction(int value)
             if (oil_scale_y >= 0.5f) {
                 oil_timer = !oil_timer;
                 potato_fry_timer = true;
-                effect_channel->stop();
-                ssystem->createSound("sound/potato_fry_sound.mp3", 0, 0, &potato_fry_sound);
-                ssystem->playSound(potato_fry_sound, 0, false, &effect_channel);
             }
         }
         if (potato_fry_timer) {
@@ -1685,6 +1734,8 @@ void TimerFunction(int value)
             if (flip_bar_tx >= 0.8f) {
                 potato_fry_timer = !potato_fry_timer;
                 potato_cooked_finish = true;
+                effect_channel->stop();
+                potato_fry_sound->release();
                 // 성공 / 실패 사운드
             }
         }
@@ -1702,6 +1753,8 @@ void TimerFunction(int value)
             flip_bar_tx += 0.05f;
             if (flip_bar_tx >= 0.9f) {
                 pour_coke = false; pour_done = true;
+                effect_channel->stop();
+                coke_sound->release();
             }
         }
         for (int i = 0; i < cokeblock.size();) {
@@ -1804,7 +1857,11 @@ void Motion(int x, int y)
         if (time_angle < 360.0f) {
             bowl.rotate_x =  fabs(atan2(mx, my));
             bowl.rotate_z = fabs(atan2(mx, my));
-            if (fabs(bread_angle - atan2(mx, my)>1.4))game_result[6] =2, time_angle =360.0f ,jcnt =1;
+            if (fabs(bread_angle - atan2(mx, my) > 1.4)) {
+                game_result[6] = 2, time_angle = 360.0f, jcnt = 1;
+                effect_channel->stop();
+                washing_sound->release();
+            }
             score[6][0] += 2*fabs(bread_angle - atan2(mx, my));
 
             bread_angle = atan2(mx, my);
