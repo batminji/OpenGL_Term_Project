@@ -1904,7 +1904,7 @@ void TimerFunction(int value)
             effect_channel->stop();
             washing_sound->release();
         }
-        if (time_angle > 440.0f) SCENE = 7, time_angle = 0;
+        if (time_angle > 390.0f) SCENE = 7, time_angle = 0;
     }
           break;
     case 7:
@@ -1990,7 +1990,9 @@ void TimerFunction(int value)
         if (food_stack == 3) surfood = &wheel[1] , top = 0.3;
         if (food_stack == 4) surfood = &wheel[0], top = 0.5;
         if (food_stack == 5) surfood = &bread[0],top= 1.0;
-        
+        bread[0].rotate_x = 0;
+        bread[0].rotate_y= 0;
+        bread[0].rotate_z = 0;
         if (jcnt == 0) { surfood->move.y = 1.3f; 
         surfood->move.x += (bar_dir) * 0.1;
         if (surfood->move.x > 1.0f) bar_dir = -1, surfood->move.x =1.0f;
