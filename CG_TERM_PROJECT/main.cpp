@@ -500,8 +500,8 @@ UIMesh flip_bar;
 bool potato_cooked_finish = false;
 bool oil_timer = false;
 bool potato_fry_timer = false;
-float score[10][2] = { 0 };
-int game_result[10] = { 0 };
+float score[20][2] = { 0 };
+int game_result[20] = { 0 };
 float bar_move = 0.0f;
 float time_angle = 0.0f;
 int bar_dir = 1;
@@ -1463,6 +1463,28 @@ GLvoid drawScene() {
             story_background.Bind();
             story_background.Draw();
         }
+
+        if (jcnt == 2) { //Á¡¼ö
+            int all_score = 0;
+            for (int s = 3; s < 7; s++) {
+                if (game_result[s] == 1) {
+                    all_score += 100;
+                }
+            }
+            all_score += score[10][0];
+            string score_str = to_string(all_score);
+            for (int c = score_str.length() - 1; c > -1; c--) {
+                string name = "resource/" + to_string((int)score_str[c]-48) + ".png";
+                game_ui.textureFile = name;
+                game_ui.Texturing();
+                game_ui.Bind();
+            
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 1.0f)) * glm::translate(glm::mat4(1.0f), glm::vec3(0.2f + c * -0.1, -0.2f, 0.0f))));
+                game_ui.Draw();
+                
+            }
+          
+        }
     }
     break;
     }
@@ -1645,7 +1667,15 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     case 10:
     {
-        if (key == GLUT_KEY_SPACE && jcnt == 0) jcnt = 1;
+        Plane* surfood = nullptr;
+        float top = 0;
+        if (food_stack == 0) surfood = &bread[1], top = -0.1f;
+        if (food_stack == 1) surfood = &meat, top = 0.1;
+        if (food_stack == 2) surfood = &cheese, top = 0.4;
+        if (food_stack == 3) surfood = &wheel[1], top = 0.3;
+        if (food_stack == 4) surfood = &wheel[0], top = 0.5;
+        if (food_stack == 5) surfood = &bread[0], top = 1.0;
+        if (key == GLUT_KEY_SPACE && jcnt == 0) jcnt = 1 ,score[10][0] += (10.0 - fabs(surfood->move.y));
     }
     break;
     }
@@ -1848,7 +1878,6 @@ void TimerFunction(int value)
             steak_fry_sound->release();
         }
         if (time_angle > 440.0f) {
-            bread_angle = 0;
             SCENE = 6, time_angle = 0;
             effect_channel->stop();
             ssystem->createSound("sound/washing.mp3", FMOD_LOOP_NORMAL, 0, &washing_sound);
@@ -2060,7 +2089,7 @@ void Motion(int x, int y)
         if (time_angle < 360.0f) {
             bowl.rotate_x =  fabs(atan2(mx, my));
             bowl.rotate_z = fabs(atan2(mx, my));
-            if (fabs(bread_angle - atan2(mx, my) > 1.4)) {
+            if (fabs(bread_angle - atan2(mx, my) > 2.0)) {
                 effect_channel->stop();
                 washing_sound->release();
                 ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
