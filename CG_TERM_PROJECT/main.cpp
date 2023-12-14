@@ -66,6 +66,9 @@ Sound* steak_fry_sound;
 Sound* slice_sound;
 Sound* washing_sound;
 Sound* coke_sound;
+Sound* spongebob_fail;
+Sound* spongebob_good;
+Sound* flip_sound;
 Channel* bgm_channel = 0;
 Channel* effect_channel = 0;
 FMOD_RESULT result;
@@ -583,6 +586,8 @@ GLvoid drawScene() {
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
         ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
+        ssystem->createSound("sound/spongebob_fail.mp3", FMOD_DEFAULT, 0, &spongebob_fail);
+        ssystem->createSound("sound/spongebob_good.mp3", FMOD_DEFAULT, 0, &spongebob_good);
         ssystem->playSound(bgm, 0, false, &bgm_channel);
         bgm_channel->setVolume(0.5f);
     }
@@ -1419,7 +1424,12 @@ void keyboard(unsigned char key, int x, int y) {
     case 3:
         switch (key) {
         case GLUT_KEY_SPACE:
-        {   if (time_angle<360.0f&&bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0)jcnt = 1, score[3][1] += 4.0f;
+        {   if (time_angle < 360.0f && bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0) {
+            jcnt = 1, score[3][1] += 4.0f;
+            effect_channel->stop();
+            ssystem->createSound("sound/flip_sound.ogg", FMOD_DEFAULT, 0, &flip_sound);
+            ssystem->playSound(flip_sound, 0, false, &effect_channel);
+        }
         break; }
         }
         break;
@@ -1442,6 +1452,9 @@ void keyboard(unsigned char key, int x, int y) {
         meat_click = 0;
         meat.size_more = glm::vec3(1.0f);
         meat.move.y = 0.0f;
+        effect_channel->stop();
+        ssystem->createSound("sound/flip_sound.ogg", FMOD_DEFAULT, 0, &flip_sound);
+        ssystem->playSound(flip_sound, 0, false, &effect_channel);
         }
         break; }
         }
@@ -1464,6 +1477,7 @@ void keyboard(unsigned char key, int x, int y) {
                 }
                 effect_channel->stop();
                 ssystem->playSound(slice_sound, 0, false, &effect_channel);
+                ssystem->playSound(spongebob_good, 0, false, &effect_channel);
             }
             break;
         }
@@ -1474,6 +1488,7 @@ void keyboard(unsigned char key, int x, int y) {
             if (potato_cooked_finish) {
                 SCENE++;
                 flip_bar_tx = -0.8f; flip_bar_dir = true;
+                effect_channel->stop();
             }
             if (!oil_timer && oil_scale_y <= 0.0f) {
                 oil_timer = !oil_timer;
@@ -1486,6 +1501,12 @@ void keyboard(unsigned char key, int x, int y) {
                 potato_cooked_finish = true;
                 effect_channel->stop();
                 potato_fry_sound->release();
+                if (flip_bar_tx >= -0.1f && flip_bar_tx <= 0.1f) {
+                    ssystem->playSound(spongebob_good, 0, false, &effect_channel);
+                }
+                else {
+                    ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
+                }
             }
             break;
         }
@@ -1507,6 +1528,14 @@ void keyboard(unsigned char key, int x, int y) {
                 pour_done = true;
                 effect_channel->stop();
                 coke_sound->release();
+
+                if (flip_bar_tx >= 0.5f && flip_bar_tx <= 0.7f) {
+                    ssystem->playSound(spongebob_good, 0, false, &effect_channel);
+                }
+                else {
+                    effect_channel->stop();
+                    ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
+                }
             }
             break;
         }
@@ -1760,6 +1789,13 @@ void TimerFunction(int value)
                 effect_channel->stop();
                 potato_fry_sound->release();
                 // 성공 / 실패 사운드
+                if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
+                    ssystem->playSound(spongebob_good, 0, false, &effect_channel);
+                }
+                else {
+                    effect_channel->stop();
+                    ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
+                }
             }
         }
     }
@@ -1777,7 +1813,7 @@ void TimerFunction(int value)
             if (flip_bar_tx >= 0.9f) {
                 pour_coke = false; pour_done = true;
                 effect_channel->stop();
-                coke_sound->release();
+                ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
             }
         }
         for (int i = 0; i < cokeblock.size();) {
