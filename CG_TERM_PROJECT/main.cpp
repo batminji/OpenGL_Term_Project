@@ -66,6 +66,7 @@ Sound* steak_fry_sound;
 Sound* slice_sound;
 Sound* washing_sound;
 Sound* coke_sound;
+Sound* spongebob_fail;
 Channel* bgm_channel = 0;
 Channel* effect_channel = 0;
 FMOD_RESULT result;
@@ -576,6 +577,7 @@ GLvoid drawScene() {
         ssystem->init(32, FMOD_INIT_NORMAL, extradriverdata);
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
         ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
+        ssystem->createSound("sound/spongebob_fail.mp3", FMOD_DEFAULT, 0, &spongebob_fail);
         ssystem->playSound(bgm, 0, false, &bgm_channel);
         bgm_channel->setVolume(0.5f);
     }
@@ -1457,6 +1459,7 @@ void keyboard(unsigned char key, int x, int y) {
                 }
                 effect_channel->stop();
                 ssystem->playSound(slice_sound, 0, false, &effect_channel);
+                // 성공 사운드 출력
             }
             break;
         }
@@ -1467,6 +1470,7 @@ void keyboard(unsigned char key, int x, int y) {
             if (potato_cooked_finish) {
                 SCENE++;
                 flip_bar_tx = -0.8f; flip_bar_dir = true;
+                effect_channel->stop();
             }
             if (!oil_timer && oil_scale_y <= 0.0f) {
                 oil_timer = !oil_timer;
@@ -1479,6 +1483,12 @@ void keyboard(unsigned char key, int x, int y) {
                 potato_cooked_finish = true;
                 effect_channel->stop();
                 potato_fry_sound->release();
+                if (flip_bar_tx >= -0.1f && flip_bar_tx <= 0.1f) {
+                    // 성공 사운드 출력
+                }
+                else {
+                    ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
+                }
             }
             break;
         }
@@ -1500,6 +1510,14 @@ void keyboard(unsigned char key, int x, int y) {
                 pour_done = true;
                 effect_channel->stop();
                 coke_sound->release();
+
+                if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
+                    // 성공 사운드 출력
+                }
+                else {
+                    effect_channel->stop();
+                    ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
+                }
             }
             break;
         }
@@ -1737,6 +1755,13 @@ void TimerFunction(int value)
                 effect_channel->stop();
                 potato_fry_sound->release();
                 // 성공 / 실패 사운드
+                if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
+
+                }
+                else {
+                    effect_channel->stop();
+                    ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
+                }
             }
         }
     }
@@ -1754,7 +1779,7 @@ void TimerFunction(int value)
             if (flip_bar_tx >= 0.9f) {
                 pour_coke = false; pour_done = true;
                 effect_channel->stop();
-                coke_sound->release();
+                ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
             }
         }
         for (int i = 0; i < cokeblock.size();) {
