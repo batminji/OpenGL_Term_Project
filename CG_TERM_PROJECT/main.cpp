@@ -70,6 +70,7 @@ Sound* spongebob_fail;
 Sound* spongebob_good;
 Sound* flip_sound;
 Sound* yay_sound;
+Sound* success_sound;
 Channel* bgm_channel = 0;
 Channel* effect_channel = 0;
 FMOD_RESULT result;
@@ -1615,7 +1616,8 @@ void keyboard(unsigned char key, int x, int y) {
                 meat.move = glm::vec3(0, 3.0f, 0);
                 meat.size_more.x = 1.0f;
                 bread[0].size_more.y += 1.0;
-              
+
+          
             }
             if (!pour_coke && flip_bar_tx <= -0.8f) {
                 pour_coke = !pour_coke;
@@ -1969,7 +1971,18 @@ void TimerFunction(int value)
             surfood->move.y -=  0.2;
             if (surfood->move.y < top) { jcnt = 0;
             if (food_stack < 5) { food_stack++; }
-            else jcnt = 2;
+            else {
+                jcnt = 2;
+                bgm_channel->stop();
+                bgm->release();
+                ssystem->createSound("sound/hamburger_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
+                ssystem->playSound(bgm, 0, false, &bgm_channel);
+
+                effect_channel->stop();
+                ssystem->createSound("sound/success_sound.mp3", FMOD_DEFAULT, 0, &success_sound);
+                ssystem->playSound(success_sound, 0, false, &effect_channel);
+
+            }
             }
         }
     }
