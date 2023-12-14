@@ -69,6 +69,7 @@ Sound* coke_sound;
 Sound* spongebob_fail;
 Sound* spongebob_good;
 Sound* flip_sound;
+Sound* yay_sound;
 Channel* bgm_channel = 0;
 Channel* effect_channel = 0;
 FMOD_RESULT result;
@@ -593,6 +594,7 @@ GLvoid drawScene() {
         ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
         ssystem->createSound("sound/spongebob_fail.mp3", FMOD_DEFAULT, 0, &spongebob_fail);
         ssystem->createSound("sound/spongebob_good.mp3", FMOD_DEFAULT, 0, &spongebob_good);
+        ssystem->createSound("sound/yay.mp3", FMOD_DEFAULT, 0, &yay_sound);
         ssystem->playSound(bgm, 0, false, &bgm_channel);
         bgm_channel->setVolume(0.5f);
     }
@@ -1481,6 +1483,7 @@ void keyboard(unsigned char key, int x, int y) {
                         potato_gauge = 20;
                         potato_show = false; potato_cut_success = true;
                         effect_channel->stop();
+                        ssystem->playSound(yay_sound, 0, false, &effect_channel);
                         ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                     }
                 }
@@ -1508,6 +1511,7 @@ void keyboard(unsigned char key, int x, int y) {
                 effect_channel->stop();
                 potato_fry_sound->release();
                 if (flip_bar_tx >= -0.1f && flip_bar_tx <= 0.1f) {
+                    ssystem->playSound(yay_sound, 0, false, &effect_channel);
                     ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 }
                 else {
@@ -1536,6 +1540,7 @@ void keyboard(unsigned char key, int x, int y) {
                 coke_sound->release();
 
                 if (flip_bar_tx >= 0.5f && flip_bar_tx <= 0.7f) {
+                    ssystem->playSound(yay_sound, 0, false, &effect_channel);
                     ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 }
                 else {
@@ -1675,6 +1680,7 @@ void TimerFunction(int value)
             }
             if ((int)score[3][0] / 10.0 >= 20 && (int)score[3][1] >= 20) { 
                 effect_channel->stop();
+                ssystem->playSound(yay_sound, 0, false, &effect_channel);
                 ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 game_result[3] = 1, time_angle = 360.0f; }
         }
@@ -1694,6 +1700,7 @@ void TimerFunction(int value)
         for (int i = 0; i < 40; i++) cheeses[i].down();
         if (time_angle < 360.0f && cheese_slice >= 40) { 
             effect_channel->stop();
+            ssystem->playSound(yay_sound, 0, false, &effect_channel);
             ssystem->playSound(spongebob_good, 0, false, &effect_channel);
             time_angle = 360.0f, game_result[4] = 1; }
         if (time_angle >= 360.0 && game_result[4] == 0) { if (cheese_slice < 40){ 
@@ -1729,6 +1736,7 @@ void TimerFunction(int value)
             }
             if ((int)score[5][0] / 10.0 >= 20 && (int)score[5][1] >= 20) {
                 effect_channel->stop();
+                ssystem->playSound(yay_sound, 0, false, &effect_channel);
                 ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 game_result[5] = 1, time_angle = 360.0f; }
         }
@@ -1754,6 +1762,7 @@ void TimerFunction(int value)
         if (time_angle < 360.0f) {
             if ((int)score[6][0] / 10.0 >= 20) { 
                 effect_channel->stop();
+                ssystem->playSound(yay_sound, 0, false, &effect_channel);
                 ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 game_result[6] = 1, time_angle = 360.0f; }
         }
@@ -1804,6 +1813,7 @@ void TimerFunction(int value)
                 potato_fry_sound->release();
                 // 성공 / 실패 사운드
                 if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
+                    ssystem->playSound(yay_sound, 0, false, &effect_channel);
                     ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 }
                 else {
