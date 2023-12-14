@@ -67,6 +67,7 @@ Sound* slice_sound;
 Sound* washing_sound;
 Sound* coke_sound;
 Sound* spongebob_fail;
+Sound* flip_sound;
 Channel* bgm_channel = 0;
 Channel* effect_channel = 0;
 FMOD_RESULT result;
@@ -1414,7 +1415,12 @@ void keyboard(unsigned char key, int x, int y) {
     case 3:
         switch (key) {
         case GLUT_KEY_SPACE:
-        {   if (time_angle<360.0f&&bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0)jcnt = 1, score[3][1] += 4.0f;
+        {   if (time_angle < 360.0f && bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0) {
+            jcnt = 1, score[3][1] += 4.0f;
+            effect_channel->stop();
+            ssystem->createSound("sound/flip_sound.ogg", FMOD_DEFAULT, 0, &flip_sound);
+            ssystem->playSound(flip_sound, 0, false, &effect_channel);
+        }
         break; }
         }
         break;
@@ -1437,6 +1443,9 @@ void keyboard(unsigned char key, int x, int y) {
         meat_click = 0;
         meat.size_more = glm::vec3(1.0f);
         meat.move.y = 0.0f;
+        effect_channel->stop();
+        ssystem->createSound("sound/flip_sound.ogg", FMOD_DEFAULT, 0, &flip_sound);
+        ssystem->playSound(flip_sound, 0, false, &effect_channel);
         }
         break; }
         }
@@ -1511,7 +1520,7 @@ void keyboard(unsigned char key, int x, int y) {
                 effect_channel->stop();
                 coke_sound->release();
 
-                if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
+                if (flip_bar_tx >= 0.5f && flip_bar_tx <= 0.7f) {
                     // 성공 사운드 출력
                 }
                 else {
