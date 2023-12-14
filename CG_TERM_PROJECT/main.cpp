@@ -17,8 +17,8 @@
 #include <fstream>
 #include <sstream>
 
-#define WINDOWX 800
-#define WINDOWY 800
+#define WINDOWX 1000
+#define WINDOWY 1000
 
 #define GLUT_KEY_SPACE 0x20
 
@@ -1455,7 +1455,9 @@ void keyboard(unsigned char key, int x, int y) {
                 SCENE++;
                 flip_bar_tx = -0.8f; flip_bar_dir = true;
             }
-            if (!oil_timer && oil_scale_y <= 0.0f) oil_timer = !oil_timer;
+            if (!oil_timer && oil_scale_y <= 0.0f) {
+                oil_timer = !oil_timer;
+            }
             if (potato_fry_timer) {
                 potato_fry_timer = !potato_fry_timer;
                 potato_cooked_finish = true;
