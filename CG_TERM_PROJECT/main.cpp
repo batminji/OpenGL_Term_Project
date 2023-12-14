@@ -17,8 +17,8 @@
 #include <fstream>
 #include <sstream>
 
-#define WINDOWX 1000
-#define WINDOWY 1000
+#define WINDOWX 800
+#define WINDOWY 800
 
 #define GLUT_KEY_SPACE 0x20
 
@@ -306,6 +306,8 @@ Plane meat;
 Plane bowl;
 Plane tomato;
 Plane cabbage;
+Plane wheel[2]; 
+
 glm::mat4 TR = glm::mat4(1.0f);
 
 void keyboard(unsigned char, int, int);
@@ -563,6 +565,11 @@ GLvoid drawScene() {
         tomato.mesh[0].textureFile = "food/Tomato.png";
         LoadOBJ_single("tool/bowl.obj", bowl.mesh);
         bowl.mesh[0].textureFile = "tool/bowl_colors.png";
+       
+        LoadOBJ_single("food/wheel/wheel.obj",wheel[0].mesh);
+        wheel[0].mesh[0].textureFile = "food/wheel/tomato.png";
+        LoadOBJ_single("food/wheel/wheel.obj", wheel[1].mesh);
+        wheel[1].mesh[0].textureFile = "food/wheel/cabbage.png";
         tomato.size = 50.0f;
         bowl.size = 1.8f;
         bowl.move.y = -1.0;
@@ -1631,10 +1638,14 @@ void TimerFunction(int value)
                 jcnt++;
                 if (jcnt == 19)printf("%f", bread[0].rotate_z), jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
             }
-            if ((int)score[3][0] / 10.0 >= 20 && (int) score[3][1] >= 20) game_result[3] = 1,time_angle = 360.0f;
+            if ((int)score[3][0] / 10.0 >= 20 && (int)score[3][1] >= 20) { 
+                //성공소리출력 
+                game_result[3] = 1, time_angle = 360.0f; }
         }
         if (time_angle >= 360.0 && game_result[3] == 0) { 
-            if ((int)score[3][0] / 10.0 < 20 || (int)score[3][1] < 20) game_result[3] = 2; 
+            if ((int)score[3][0] / 10.0 < 20 || (int)score[3][1] < 20) { 
+                //실패소리 출력 
+                game_result[3] = 2; }
             effect_channel->stop();
             bread_fry_sound->release();
         }
@@ -1644,8 +1655,12 @@ void TimerFunction(int value)
     case 4:{
         time_angle += 3.0f;
         for (int i = 0; i < 40; i++) cheeses[i].down();
-        if (time_angle < 360.0f && cheese_slice >= 40) time_angle = 360.0f, game_result[4] = 1;
-        if (time_angle >= 360.0 && game_result[4] == 0) { if (cheese_slice < 40) game_result[4] = 2; }
+        if (time_angle < 360.0f && cheese_slice >= 40) { 
+            //성공소리출력 
+            time_angle = 360.0f, game_result[4] = 1; }
+        if (time_angle >= 360.0 && game_result[4] == 0) { if (cheese_slice < 40){ 
+            //실패소리출력 
+            game_result[4] = 2; } }
         if (time_angle > 480.0f) {
             SCENE = 5, time_angle = 0;
             effect_channel->stop();
@@ -1673,10 +1688,14 @@ void TimerFunction(int value)
                 jcnt++;
                 if (jcnt == 19) jcnt = 0,meat.move.y = 0, fryfan.rotate_x = -100.0f;
             }
-            if ((int)score[5][0] / 10.0 >= 20 && (int)score[5][1] >= 20) game_result[5] = 1, time_angle = 360.0f;
+            if ((int)score[5][0] / 10.0 >= 20 && (int)score[5][1] >= 20) {
+                //성공소리 출력 
+                game_result[5] = 1, time_angle = 360.0f; }
         }
         if (time_angle >= 360.0 && game_result[5] == 0) { 
-            if ((int)score[5][0] / 10.0 < 20 || (int)score[5][1] < 20) game_result[5] = 2;
+            if ((int)score[5][0] / 10.0 < 20 || (int)score[5][1] < 20) { 
+                //실패소리출력 
+                game_result[5] = 2; }
             effect_channel->stop();
             steak_fry_sound->release();
         }
@@ -1692,14 +1711,18 @@ void TimerFunction(int value)
         time_angle += 1.5f;
         if (jcnt > 0) tomato.move += glm::vec3(0.3, 0.1, 0.3), cabbage.move -= glm::vec3(0.3, -0.1, 0.3);
         if (time_angle < 360.0f) {
-            if ((int)score[6][0] / 10.0 >= 20) game_result[6] = 1, time_angle = 360.0f;
+            if ((int)score[6][0] / 10.0 >= 20) { 
+                //성공소리출력 
+                game_result[6] = 1, time_angle = 360.0f; }
         }
         if (time_angle >= 360.0 && game_result[6] == 0) { 
-            if ((int)score[6][0] / 10.0 < 10) game_result[6] = 2; 
+            if ((int)score[6][0] / 10.0 < 10) {
+                //실패소리 출력 
+                game_result[6] = 2; }
             effect_channel->stop();
             washing_sound->release();
         }
-        if (time_angle > 440.0f) SCENE = 7, time_angle = 0;
+        if (time_angle > 440.0f) SCENE = 7, time_angle = 0 , bread_angle = atan2(mx, my);
     }
           break;
     case 7:
@@ -1858,6 +1881,7 @@ void Motion(int x, int y)
             bowl.rotate_x =  fabs(atan2(mx, my));
             bowl.rotate_z = fabs(atan2(mx, my));
             if (fabs(bread_angle - atan2(mx, my) > 1.4)) {
+                //실패소리 출력 
                 game_result[6] = 2, time_angle = 360.0f, jcnt = 1;
                 effect_channel->stop();
                 washing_sound->release();
