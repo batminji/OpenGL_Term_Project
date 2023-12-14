@@ -311,6 +311,7 @@ Plane bowl;
 Plane tomato;
 Plane cabbage;
 Plane wheel[2]; 
+Plane cheese;
 
 glm::mat4 TR = glm::mat4(1.0f);
 
@@ -459,6 +460,8 @@ int SCENE = 0;
 glm::vec3 CameraPos = { 5.0f, 5.0f, 5.0f };
 glm::vec3 CameraAt = { -5.0f,-1.0f, -2.0f };
 
+int food_stack = 0; 
+
 // 시작화면
 glm::vec3 START_CameraPos[4] = {
     {5.0f, 5.0f, 5.0f},
@@ -580,6 +583,9 @@ GLvoid drawScene() {
         LoadOBJ_single("food/wheel/wheel.obj", wheel[1].mesh);
         wheel[1].mesh[0].textureFile = "food/wheel/cabbage.png";
         wheel[1].move.y += 0.5;
+        wheel[0].size = 0.5, wheel[1].size = 0.5;
+        wheel[0].size_more.y = 0.15, wheel[1].size_more.y = 0.15;
+        cheese.size_more.y = 0.05;
         tomato.size = 50.0f;
         bowl.size = 1.8f;
         bowl.move.y = -1.0;
@@ -918,16 +924,66 @@ GLvoid drawScene() {
     }
         break;
     case 10:
-    {  glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
-    for (int c = 0; c < 2; c++) {
-        for (Mesh m : wheel[c].mesh) {
-            wheel[c].mesh[0].Texturing();
-            m.Bind();
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(wheel[c].my_TR()));
-            m.Draw();
-        }
-    }
+    {  glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0,2 , 5), glm::vec3(0, 0, 0), cameraUp)));
   
+        if (food_stack >= 0) {
+            //참깨빵
+            for (Mesh m : bread[1].mesh) {
+                bread[1].mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[1].my_TR()));
+                m.Draw();
+            }
+        }
+        if (food_stack >= 1) {
+            //게살패티
+            for (Mesh m : meat.mesh) {
+                meat.mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(meat.my_TR()));
+                m.Draw();
+            }
+        }
+        if (food_stack >= 2) {
+            //치즈
+            Cube.mesh[0].textureFile = "food/cheese.png";
+            for (int i = 0; i < Cube.mesh.size(); ++i) {
+                Cube.mesh[0].Texturing();
+                Cube.mesh[i].Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(cheese.my_TR()));
+                Cube.mesh[i].Draw();
+            }
+            Cube.mesh[0].textureFile = "white.png";
+        }
+        if (food_stack >= 3) {
+            //양상추
+            for (Mesh m : wheel[1].mesh) {
+                wheel[1].mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(wheel[1].my_TR()));
+                m.Draw();
+            }
+
+        }
+        if (food_stack >= 4) {
+            //토마토 
+            for (Mesh m : wheel[0].mesh) {
+                wheel[0].mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(wheel[0].my_TR()));
+                m.Draw();
+            }
+       
+        }
+        if (food_stack >= 5) {
+            //참깨빵
+            for (Mesh m : bread[0].mesh) {
+                bread[0].mesh[0].Texturing();
+                m.Bind();
+                glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(bread[0].my_TR()));
+                m.Draw();
+            }
+        }
     }
     break;
     }
@@ -1396,6 +1452,19 @@ GLvoid drawScene() {
         }
     }
         break;
+    case 10:
+    { { //배경
+            TR = glm::mat4(1.0f);
+            TR = glm::translate(TR, glm::vec3(0.0f, 0.0f, -99.0f));
+            TR = glm::scale(TR, glm::vec3(2.0f, 2.0f, 1.0f));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(TR));
+            story_background.textureFile = "resource/dish_bg.png";
+            story_background.Texturing();
+            story_background.Bind();
+            story_background.Draw();
+        }
+    }
+    break;
     }
 
     glutSwapBuffers();
@@ -1540,6 +1609,14 @@ void keyboard(unsigned char key, int x, int y) {
         case GLUT_KEY_SPACE:
             if (pour_done) {
                 SCENE++;
+                jcnt = 0; 
+                for (int j = 0; j < 2; j++)  bread[j].size_more.x = 1.8f, bread[j].move = glm::vec3(0, 3.0f,0), wheel[j].move = glm::vec3(0, 3.0f, 1.0f) , wheel[j].size_more.x -= 0.3;
+                cheese.move = glm::vec3(0, 3.0f, 0);
+                cheese.size_more.x -= 0.3;
+                meat.move = glm::vec3(0, 3.0f, 0);
+                meat.size_more.x = 1.0f;
+                bread[0].size_more.y += 1.0;
+              
             }
             if (!pour_coke && flip_bar_tx <= -0.8f) {
                 pour_coke = !pour_coke;
@@ -1564,7 +1641,13 @@ void keyboard(unsigned char key, int x, int y) {
             }
             break;
         }
+  
         break;
+    case 10:
+    {
+        if (key == GLUT_KEY_SPACE && jcnt == 0) jcnt = 1;
+    }
+    break;
     }
     glutPostRedisplay();
 }
@@ -1587,7 +1670,7 @@ void SpecialKeyboard(int key, int x, int y)
     }
     glutPostRedisplay();
 }
-float bread_angle = 0;
+//float bread_angle = 0;
 void TimerFunction(int value)
 {
     switch (SCENE) {
@@ -1867,7 +1950,33 @@ void TimerFunction(int value)
         }
     }
         break;
+    case 10:
+    {
+        Plane* surfood = nullptr;
+        float top = 0;
+        if (food_stack == 0) surfood = &bread[1] , top=-0.1f;
+        if (food_stack == 1) surfood = &meat , top = 0.1;
+        if (food_stack == 2) surfood = &cheese, top = 0.4;
+        if (food_stack == 3) surfood = &wheel[1] , top = 0.3;
+        if (food_stack == 4) surfood = &wheel[0], top = 0.5;
+        if (food_stack == 5) surfood = &bread[0],top= 1.0;
+        
+        if (jcnt == 0) { surfood->move.y = 1.3f; 
+        surfood->move.x += (bar_dir) * 0.1;
+        if (surfood->move.x > 1.0f) bar_dir = -1, surfood->move.x =1.0f;
+        if (surfood->move.x < -1.0f) bar_dir = 1, surfood->move.x = -1.0f;
+        }
+        else if (jcnt == 1) {
+            surfood->move.y -=  0.2;
+            if (surfood->move.y < top) { jcnt = 0;
+            if (food_stack < 5) { food_stack++; }
+            else jcnt = 2;
+            }
+        }
     }
+    break;
+    }
+    
 
     glutPostRedisplay();
     glutTimerFunc(60, TimerFunction, 1);
