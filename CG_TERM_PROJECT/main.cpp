@@ -579,6 +579,7 @@ GLvoid drawScene() {
         wheel[0].mesh[0].textureFile = "food/wheel/tomato.png";
         LoadOBJ_single("food/wheel/wheel.obj", wheel[1].mesh);
         wheel[1].mesh[0].textureFile = "food/wheel/cabbage.png";
+        wheel[1].move.y += 0.5;
         tomato.size = 50.0f;
         bowl.size = 1.8f;
         bowl.move.y = -1.0;
@@ -916,6 +917,19 @@ GLvoid drawScene() {
         glUniform4f(objColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);*/
     }
         break;
+    case 10:
+    {  glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(glm::lookAt(glm::vec3(0, 6, 2), glm::vec3(0, 0, 0), cameraUp)));
+    for (int c = 0; c < 2; c++) {
+        for (Mesh m : wheel[c].mesh) {
+            wheel[c].mesh[0].Texturing();
+            m.Bind();
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(wheel[c].my_TR()));
+            m.Draw();
+        }
+    }
+  
+    }
+    break;
     }
 
     // UI
@@ -1573,7 +1587,7 @@ void SpecialKeyboard(int key, int x, int y)
     }
     glutPostRedisplay();
 }
-
+float bread_angle = 0;
 void TimerFunction(int value)
 {
     switch (SCENE) {
@@ -1692,7 +1706,7 @@ void TimerFunction(int value)
             effect_channel->stop();
             bread_fry_sound->release();
         }
-        if (time_angle > 440.0f) SCENE = 4,time_angle = 0;
+        if (time_angle > 440.0f) bread_angle = 0,SCENE = 4,time_angle = 0;
     }
           break;
     case 4:{
@@ -1709,6 +1723,8 @@ void TimerFunction(int value)
             game_result[4] = 2; } }
         if (time_angle > 480.0f) {
             SCENE = 5, time_angle = 0;
+            jcnt = 0;
+            bread_angle = 0;
             effect_channel->stop();
             ssystem->createSound("sound/steak_fry_sound.mp3", FMOD_LOOP_NORMAL, 0, &steak_fry_sound);
             ssystem->playSound(steak_fry_sound, 0, false, &effect_channel);
@@ -1749,6 +1765,7 @@ void TimerFunction(int value)
             steak_fry_sound->release();
         }
         if (time_angle > 440.0f) {
+            bread_angle = 0;
             SCENE = 6, time_angle = 0;
             effect_channel->stop();
             ssystem->createSound("sound/washing.mp3", FMOD_LOOP_NORMAL, 0, &washing_sound);
@@ -1774,7 +1791,7 @@ void TimerFunction(int value)
             effect_channel->stop();
             washing_sound->release();
         }
-        if (time_angle > 440.0f) SCENE = 7, time_angle = 0 , bread_angle = atan2(mx, my);
+        if (time_angle > 440.0f) SCENE = 7, time_angle = 0;
     }
           break;
     case 7:
