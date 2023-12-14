@@ -1447,7 +1447,6 @@ void keyboard(unsigned char key, int x, int y) {
         case GLUT_KEY_SPACE:
         {   if (time_angle < 360.0f && bar_move >= -0.070000 && bar_move <= 0.020000 && jcnt == 0) {
             jcnt = 1, score[3][1] += 4.0f;
-            effect_channel->stop();
             ssystem->createSound("sound/flip_sound.ogg", FMOD_DEFAULT, 0, &flip_sound);
             ssystem->playSound(flip_sound, 0, false, &effect_channel);
         }
@@ -1587,7 +1586,6 @@ void SpecialKeyboard(int key, int x, int y)
     }
     glutPostRedisplay();
 }
-float bread_angle = 0;
 void TimerFunction(int value)
 {
     switch (SCENE) {
@@ -1690,7 +1688,7 @@ void TimerFunction(int value)
                 fryfan.rotate_x -= 2.0f;
                 for (int c = 0; c < 2; c++) bread[c].move.y -= 0.4, bread[c].rotate_z += 10.0f;
                 jcnt++;
-                if (jcnt == 19)printf("%f", bread[0].rotate_z), jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
+                if (jcnt == 19)jcnt = 0, bread[0].move.y = 0, bread[1].move.y = 0, fryfan.rotate_x = -100.0f;
             }
             if ((int)score[3][0] / 10.0 >= 20 && (int)score[3][1] >= 20) { 
                 effect_channel->stop();
@@ -1880,13 +1878,11 @@ void Mouse(int button, int state, int x, int y)
     if (SCENE != 5 && SCENE !=6)
     {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-            printf("POS : (%f, %f, %f )\n", CameraPos.x, CameraPos.y, CameraPos.z);
             left_down = 1;
             sx = mx;
             sy = my;
         }
         if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
-            printf("AT : (%f, %f, %f )\n", CameraAt.x, CameraAt.y, CameraAt.z);
             left_down = 0;
         }
     }
@@ -2217,7 +2213,7 @@ void main(int argc, char** argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(0, 0);
     glutInitWindowSize(WINDOWX, WINDOWY);
-    glutCreateWindow("참깨빵 위에 게살 패티 두 장 특별한 소스 양상추 치즈 피클 양파 까 ~ 지");
+    glutCreateWindow("참깨빵 위에 게살 패티 두 장 특별한 치즈 양상추 토마토까 ~ 지");
     glewExperimental = GL_TRUE;
     glewInit();
 
