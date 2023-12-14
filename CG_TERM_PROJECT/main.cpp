@@ -67,6 +67,7 @@ Sound* slice_sound;
 Sound* washing_sound;
 Sound* coke_sound;
 Sound* spongebob_fail;
+Sound* spongebob_good;
 Sound* flip_sound;
 Channel* bgm_channel = 0;
 Channel* effect_channel = 0;
@@ -579,6 +580,7 @@ GLvoid drawScene() {
         ssystem->createSound("sound/title_bgm.mp3", FMOD_LOOP_NORMAL, 0, &bgm);
         ssystem->createSound("sound/button_click_sound.wav", FMOD_DEFAULT, 0, &click_sound);
         ssystem->createSound("sound/spongebob_fail.mp3", FMOD_DEFAULT, 0, &spongebob_fail);
+        ssystem->createSound("sound/spongebob_good.mp3", FMOD_DEFAULT, 0, &spongebob_good);
         ssystem->playSound(bgm, 0, false, &bgm_channel);
         bgm_channel->setVolume(0.5f);
     }
@@ -1468,7 +1470,7 @@ void keyboard(unsigned char key, int x, int y) {
                 }
                 effect_channel->stop();
                 ssystem->playSound(slice_sound, 0, false, &effect_channel);
-                // 성공 사운드 출력
+                ssystem->playSound(spongebob_good, 0, false, &effect_channel);
             }
             break;
         }
@@ -1493,7 +1495,7 @@ void keyboard(unsigned char key, int x, int y) {
                 effect_channel->stop();
                 potato_fry_sound->release();
                 if (flip_bar_tx >= -0.1f && flip_bar_tx <= 0.1f) {
-                    // 성공 사운드 출력
+                    ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 }
                 else {
                     ssystem->playSound(spongebob_fail, 0, false, &effect_channel);
@@ -1521,7 +1523,7 @@ void keyboard(unsigned char key, int x, int y) {
                 coke_sound->release();
 
                 if (flip_bar_tx >= 0.5f && flip_bar_tx <= 0.7f) {
-                    // 성공 사운드 출력
+                    ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 }
                 else {
                     effect_channel->stop();
@@ -1765,7 +1767,7 @@ void TimerFunction(int value)
                 potato_fry_sound->release();
                 // 성공 / 실패 사운드
                 if (flip_bar_tx >= -0.2f && flip_bar_tx <= 0.2f) {
-
+                    ssystem->playSound(spongebob_good, 0, false, &effect_channel);
                 }
                 else {
                     effect_channel->stop();
